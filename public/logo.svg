@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%" fill="none">
+  <!-- Circular luxury border with subtle antique gold gradient -->
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E8D1A7" />
+      <stop offset="50%" stop-color="#C5A265" />
+      <stop offset="100%" stop-color="#8C6D37" />
+    </linearGradient>
+    <linearGradient id="goldShine" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#C5A265" />
+      <stop offset="50%" stop-color="#F2E6CE" />
+      <stop offset="100%" stop-color="#B88E4C" />
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Ring -->
+  <circle cx="100" cy="100" r="92" stroke="url(#goldGrad)" stroke-width="1.75" opacity="0.85" />
+  <circle cx="100" cy="100" r="87" stroke="url(#goldGrad)" stroke-width="0.75" opacity="0.4" stroke-dasharray="2 3" />
+
+  <!-- Botanical Lily Emblem & Monogram -->
+  <g transform="translate(100, 100)">
+    <!-- Top Crown / Lily Petal Sparkle -->
+    <path d="M0 -62 C3 -52 10 -46 20 -44 C10 -42 3 -36 0 -26 C-3 -36 -10 -42 -20 -44 C-10 -46 -3 -52 0 -62 Z" fill="url(#goldShine)" />
+    <circle cx="0" cy="-44" r="2.5" fill="#FAF7F2" />
+
+    <!-- Stylized Interlocking Double L -->
+    <!-- First 'L' -->
+    <path d="M-22 -30 L-22 36 C-22 38 -20 40 -16 40 L16 40 C19 40 21 38 21 35 L21 32 C21 30 19 28 17 28 L-10 28 L-10 -30 Z" fill="url(#goldGrad)" />
+    <!-- Second 'L' mirrored & offset -->
+    <path d="M-8 -18 L-8 48 C-8 50 -6 52 -2 52 L30 52 C33 52 35 50 35 47 L35 44 C35 42 33 40 31 40 L4 40 L4 -18 Z" fill="url(#goldShine)" opacity="0.9" />
+
+    <!-- Delicate central accent dot -->
+    <circle cx="-16" cy="-30" r="2" fill="url(#goldShine)" />
+    <circle cx="-2" cy="-18" r="2" fill="url(#goldGrad)" />
+  </g>
+</svg>

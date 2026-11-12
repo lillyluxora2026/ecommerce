@@ -1,0 +1,344 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { supabase } from '../supabase';
+import { projectProductRow, SELLABLE_VARIANT_SELECT, type ProductRowLike } from './sellable-variants';
+
+
+type CategoryRow = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  parent_id: string | null;
+  sort_order: number;
+  banner_kicker?: string | null;
+  banner_title?: string | null;
+  banner_description?: string | null;
+  banner_image_url?: string | null;
+  banner_mobile_image_url?: string | null;
+};
+
+async function fetchCategoryRows(filter?: { parentId?: string; slug?: string }): Promise<CategoryRow[]> {
+  // Single query with all banner columns — they are now part of the live schema
+  let query = supabase
+    .from('categories')
+    .select('id, name, slug, image_url, parent_id, sort_order, banner_kicker, banner_title, banner_description, banner_image_url, banner_mobile_image_url');
+
+  if (filter?.parentId) query = query.eq('parent_id', filter.parentId);
+  if (filter?.slug) query = query.eq('slug', filter.slug);
+
+  const { data, error } = await query.order('sort_order').order('name');
+
+  if (error) {
+    console.error('fetchCategoryRows error:', error.message);
+    return [];
+  }
+
+  return (data || []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    image_url: row.image_url ?? null,
+    parent_id: row.parent_id ?? null,
+    sort_order: Number(row.sort_order ?? 0),
+    banner_kicker: row.banner_kicker ?? null,
+    banner_title: row.banner_title ?? null,
+    banner_description: row.banner_description ?? null,
+    banner_image_url: row.banner_image_url ?? null,
+    banner_mobile_image_url: row.banner_mobile_image_url ?? null,
+  })) as CategoryRow[];
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  image: string;
+  parentId: string | null;
+  sortOrder: number;
+  bannerKicker?: string;
+  bannerTitle?: string;
+  bannerDescription?: string;
+  bannerImage?: string;
+  bannerMobileImage?: string;
+  subcategories?: Category[];
+}
+
+export const SIGNATURE_LILY_LUXORA_CATEGORIES: Category[] = [
+  {
+    id: 'cat-necklaces',
+    name: 'Necklaces',
+    slug: 'necklaces',
+    image: '/images/placeholders/cat-necklaces.svg',
+    parentId: null,
+    sortOrder: 10,
+    bannerKicker: 'Lily Luxora Collection',
+    bannerTitle: 'Necklaces',
+    bannerDescription: 'Delicate clover pendants, timeless chains, and layered 18K PVD gold necklaces designed for everyday elegance.',
+    bannerImage: '/images/placeholders/cat-necklaces.svg',
+    bannerMobileImage: '/images/placeholders/cat-necklaces.svg',
+    subcategories: [],
+  },
+  {
+    id: 'cat-earrings',
+    name: 'Earrings',
+    slug: 'earrings',
+    image: '/images/placeholders/cat-earrings.svg',
+    parentId: null,
+    sortOrder: 20,
+    bannerKicker: 'Lily Luxora Collection',
+    bannerTitle: 'Earrings',
+    bannerDescription: 'Sculptural twisted hoops, chunky huggies, and feather-light waterproof silhouettes with hypoallergenic clasps.',
+    bannerImage: '/images/placeholders/cat-earrings.svg',
+    bannerMobileImage: '/images/placeholders/cat-earrings.svg',
+    subcategories: [],
+  },
+  {
+    id: 'cat-bracelets',
+    name: 'Bracelets',
+    slug: 'bracelets',
+    image: '/images/placeholders/cat-bracelets.svg',
+    parentId: null,
+    sortOrder: 30,
+    bannerKicker: 'Lily Luxora Collection',
+    bannerTitle: 'Bracelets',
+    bannerDescription: 'Waterproof charm chains, freshwater pearl accents, and timeless wrist stacks that never tarnish.',
+    bannerImage: '/images/placeholders/cat-bracelets.svg',
+    bannerMobileImage: '/images/placeholders/cat-bracelets.svg',
+    subcategories: [],
+  },
+  {
+    id: 'cat-rings',
+    name: 'Rings',
+    slug: 'rings',
+    image: '/images/placeholders/cat-rings.svg',
+    parentId: null,
+    sortOrder: 40,
+    bannerKicker: 'Lily Luxora Collection',
+    bannerTitle: 'Rings',
+    bannerDescription: 'Dual-band pavé crystal silhouettes and minimal 18K PVD gold bands crafted in skin-friendly stainless steel.',
+    bannerImage: '/images/placeholders/cat-rings.svg',
+    bannerMobileImage: '/images/placeholders/cat-rings.svg',
+    subcategories: [],
+  },
+];
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  original_price?: number;
+  image: string;
+  images?: string[];
+  is_bestseller?: boolean;
+  stock: number;
+  allow_preorder: boolean;
+  is_free_delivery?: boolean;
+  material?: string;
+  care_instructions?: string;
+  features?: string[];
+  description?: string;
+  rating?: number;
+  review_count?: number;
+  brand?: string;
+  collection?: string;
+  gender?: string;
+  return_policy?: string;
+  categoryId?: string | null;
+  parentCategoryId?: string | null;
+  variantId?: string;
+  variants?: {
+    id: string;
+    title?: string;
+    option_signature?: string | null;
+    price: number;
+    compare_at_price?: number;
+    allow_preorder?: boolean;
+    stock: number;
+    options: Record<string, string>;
+    images?: string[];
+  }[];
+}
+
+// Fetch all categories (both parent and sub)
+export async function getCategories(): Promise<Category[]> {
+  const data = await fetchCategoryRows();
+
+  if (!data.length) return SIGNATURE_LILY_LUXORA_CATEGORIES;
+
+  // Find categories missing images
+  const missingImageIds = data.filter(c => !c.banner_image_url && !c.image_url).map(c => c.id);
+  const categoryImageMap: Record<string, string> = {};
+
+  if (missingImageIds.length > 0) {
+    const subcatIds = data.filter(c => c.parent_id && missingImageIds.includes(c.parent_id)).map(c => c.id);
+    const allIdsToSearch = [...missingImageIds, ...subcatIds];
+
+    const { data: fallbackMedia } = await supabase
+      .from('products')
+      .select('category_id, product_media ( media_url )')
+      .in('category_id', allIdsToSearch)
+      .eq('status', 'active');
+      
+    if (fallbackMedia) {
+      for (const item of fallbackMedia) {
+        if (item.product_media && (item.product_media as any[]).length > 0) {
+          const catId = item.category_id;
+          const mediaUrl = (item.product_media as any[])[0].media_url;
+          
+          if (!categoryImageMap[catId]) {
+            categoryImageMap[catId] = mediaUrl;
+          }
+          
+          const catObj = data.find(c => c.id === catId);
+          if (catObj && catObj.parent_id && missingImageIds.includes(catObj.parent_id)) {
+            if (!categoryImageMap[catObj.parent_id]) {
+              categoryImageMap[catObj.parent_id] = mediaUrl;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const getCatImage = (cat: any) => cat.image_url || cat.banner_image_url || categoryImageMap[cat.id] || '/images/placeholders/category-fallback.svg';
+
+  // Top-level categories only (parent_id is null)
+  const parents = data.filter(c => c.parent_id === null).map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    image: getCatImage(cat),
+    parentId: null,
+    sortOrder: cat.sort_order ?? 0,
+    bannerKicker: cat.banner_kicker || undefined,
+    bannerTitle: cat.banner_title || undefined,
+    bannerDescription: cat.banner_description || undefined,
+    bannerImage: cat.banner_image_url || undefined,
+    bannerMobileImage: cat.banner_mobile_image_url || undefined,
+    subcategories: data
+      .filter(sub => sub.parent_id === cat.id)
+      .map(sub => ({
+        id: sub.id,
+        name: sub.name,
+        slug: sub.slug,
+        image: getCatImage(sub),
+        parentId: cat.id,
+        sortOrder: sub.sort_order ?? 0,
+        bannerKicker: sub.banner_kicker || undefined,
+        bannerTitle: sub.banner_title || undefined,
+        bannerDescription: sub.banner_description || undefined,
+        bannerImage: sub.banner_image_url || undefined,
+        bannerMobileImage: sub.banner_mobile_image_url || undefined,
+      }))
+  }));
+
+  return parents;
+}
+
+// Fetch subcategories for a specific parent
+export async function getSubcategories(parentSlug: string): Promise<Category[]> {
+  // First get parent
+  const parentRows = await fetchCategoryRows({ slug: parentSlug });
+  const parent = parentRows[0];
+
+  if (!parent) return [];
+
+  const data = await fetchCategoryRows({ parentId: parent.id });
+  if (!data || !data.length) return [];
+
+  const missingImageIds = data.filter(c => !c.banner_image_url && !c.image_url).map(c => c.id);
+  const categoryImageMap: Record<string, string> = {};
+
+  if (missingImageIds.length > 0) {
+    const { data: fallbackMedia } = await supabase
+      .from('products')
+      .select('category_id, product_media ( media_url )')
+      .in('category_id', missingImageIds)
+      .eq('status', 'active');
+      
+    if (fallbackMedia) {
+      for (const item of fallbackMedia) {
+        if (!categoryImageMap[item.category_id] && item.product_media && (item.product_media as any[]).length > 0) {
+          categoryImageMap[item.category_id] = (item.product_media as any[])[0].media_url;
+        }
+      }
+    }
+  }
+
+  const getCatImage = (cat: any) => cat.image_url || cat.banner_image_url || categoryImageMap[cat.id] || '/images/placeholders/category-fallback.svg';
+
+  return data.map(cat => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    image: getCatImage(cat),
+    parentId: cat.parent_id,
+    sortOrder: cat.sort_order ?? 0,
+    bannerKicker: cat.banner_kicker || undefined,
+    bannerTitle: cat.banner_title || undefined,
+    bannerDescription: cat.banner_description || undefined,
+    bannerImage: cat.banner_image_url || undefined,
+    bannerMobileImage: cat.banner_mobile_image_url || undefined,
+  }));
+}
+
+export async function getFeaturedProducts(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      id,
+      title,
+      slug,
+      is_free_delivery,
+      description,
+      material,
+      is_featured,
+      rating,
+      review_count,
+      brand,
+      product_variants (
+        ${SELLABLE_VARIANT_SELECT}
+      ),
+      product_media ( media_url, position )
+    `)
+    .eq('is_featured', true)
+    .eq('status', 'active')
+    .limit(8);
+
+  if (error || !data) return [];
+
+  return data.map((p: Record<string, any>) => ({
+    ...projectProductRow(p as ProductRowLike),
+    is_bestseller: true,
+  }));
+}
+
+export async function getNewArrivals(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select(`
+      id,
+      title,
+      slug,
+      is_free_delivery,
+      description,
+      material,
+      is_featured,
+      rating,
+      review_count,
+      brand,
+      created_at,
+      product_variants (
+        ${SELLABLE_VARIANT_SELECT}
+      ),
+      product_media ( media_url, position )
+    `)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (error || !data) return [];
+
+  return data.map((p: Record<string, any>) => projectProductRow(p as ProductRowLike));
+}

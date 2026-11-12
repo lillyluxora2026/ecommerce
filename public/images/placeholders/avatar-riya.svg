@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <defs>
+    <linearGradient id="avbg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EFE7DE" />
+      <stop offset="100%" stop-color="#D8CBBE" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#avbg)" />
+  <circle cx="100" cy="100" r="88" stroke="#C5A574" stroke-opacity="0.55" stroke-width="1.5" />
+  <text x="100" y="114" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-style="italic" font-size="72" fill="#6D5C50">R</text>
+  <text x="100" y="156" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="11" letter-spacing="2" fill="#8B7768">RIYA P.</text>
+</svg>
