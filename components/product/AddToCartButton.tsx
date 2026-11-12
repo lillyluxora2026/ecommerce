@@ -42,7 +42,7 @@ export function AddToCartButton({
 
   const effectiveStock = selectedVariantStock ?? product.stock;
   const effectivePrice = selectedVariantPrice ?? product.price;
-  const allowPreorder = selectedVariantAllowPreorder ?? product.allow_preorder;
+  const allowPreorder = false;
   const effectiveVariantId = selectedVariantId || product.variantId || null;
   const effectiveImage = selectedVariantImage || product.image;
 

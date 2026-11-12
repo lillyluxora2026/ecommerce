@@ -27,8 +27,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const isSoldOut = product.stock === 0 && !product.allow_preorder;
-  const isPreorder = product.stock === 0 && product.allow_preorder;
+  const isSoldOut = product.stock === 0;
+  const isPreorder = false;
   const discount = product.original_price
     ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
     : 0;

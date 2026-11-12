@@ -76,7 +76,6 @@ function getSearchScore(product: SearchResult, rawQuery: string) {
 
   if (tokens.includes(query)) score += 12;
   if (product.stock > 0) score += 8;
-  if (product.allow_preorder) score += 4;
 
   return score;
 }
@@ -375,8 +374,8 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
             ) : (
               <div className="space-y-3">
                 {results.map((product, index) => {
-                  const isSoldOut = product.stock === 0 && !product.allow_preorder;
-                  const isPreorder = product.stock === 0 && product.allow_preorder;
+                  const isSoldOut = product.stock === 0;
+                  const isPreorder = false;
 
                   return (
                     <Link

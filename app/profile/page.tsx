@@ -93,7 +93,7 @@ export default function ProfilePage() {
           Access Your Profile
         </h1>
         <p className="text-xs sm:text-sm font-sans text-[#63574F] max-w-sm mb-8 leading-relaxed">
-          Please log in to manage your addresses, view order status, and track your preorders.
+          Please log in to manage your saved addresses and view order status.
         </p>
         <button
           onClick={() => setAuthModalOpen(true)}
@@ -238,7 +238,6 @@ export default function ProfilePage() {
             <aside className="col-span-1 space-y-3 font-sans text-xs sm:text-sm">
               <Link href="/profile" className="block text-[#8B7768] font-semibold bg-[#EFE7DE] px-4 py-2.5 rounded-xl border border-[#D8CBBE]">Dashboard</Link>
               <Link href="/orders" className="block text-[#63574F] hover:text-[#382F2A] px-4 py-2.5 rounded-xl transition-colors">Order History</Link>
-              <Link href="/preorders" className="block text-[#63574F] hover:text-[#382F2A] px-4 py-2.5 rounded-xl transition-colors">My Preorders</Link>
               <Link href="/wishlist" className="block text-[#63574F] hover:text-[#382F2A] px-4 py-2.5 rounded-xl transition-colors">Wishlist</Link>
               <button
                 type="button"

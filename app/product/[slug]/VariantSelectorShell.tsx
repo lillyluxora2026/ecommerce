@@ -63,15 +63,6 @@ function getOptionValueState(
     return { disabled: false };
   }
 
-  const hasPreorderVariant = matchingVariants.some((variant) => variant.allow_preorder);
-  if (hasPreorderVariant) {
-    return {
-      disabled: false,
-      badge: "Preorder",
-      reason: "This option is available on preorder.",
-    };
-  }
-
   return {
     disabled: true,
     badge: "Sold Out",
@@ -101,7 +92,7 @@ export default function VariantSelectorShell({
   );
 
   const isUnavailable = optionSchema.length > 0 && !selectedVariant;
-  const allowPreorder = isUnavailable ? false : (selectedVariant?.allow_preorder ?? product.allow_preorder);
+  const allowPreorder = false;
   const isSoldOut = !isUnavailable && (selectedVariant?.stock ?? product.stock ?? 0) === 0 && !allowPreorder;
   const isPreorder = !isUnavailable && (selectedVariant?.stock ?? product.stock ?? 0) === 0 && allowPreorder;
   const price = selectedVariant?.price ?? product.price ?? 0;
