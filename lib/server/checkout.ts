@@ -67,7 +67,8 @@ export async function calculateGrandTotal(
   hasFreeDelivery = false
 ) {
   const taxTotal = 0;
-  const discount = Math.max(data.discountAmount || 0, couponAmount);
+  // Only a server-validated coupon can reduce the total; the amount sent by the browser is never trusted.
+  const discount = Math.min(Math.max(0, couponAmount), subtotal);
   const shippingSettings = await getShippingSettings();
   const shippingCharge =
     calculateShippingCharge({
@@ -492,7 +493,7 @@ export async function createPendingOrder(data: CheckoutData, items: CartItemInpu
     await incrementCouponUse(data.couponCode);
   }
 
-  return { orderId, grandTotal };
+  return { orderId, grandTotal, customerId };
 }
 
 export async function createRetryPaymentSession(orderId: string) {

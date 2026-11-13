@@ -15,6 +15,8 @@ export interface CheckoutData {
   shippingCharge: number;
   discountAmount?: number;
   couponCode?: string;
+  /** Token of the saved checkout session, so a paid order closes it. */
+  checkoutToken?: string | null;
 }
 
 export interface CartItemInput {

@@ -1,12 +1,13 @@
 'use client';
 
-import { useCartStore } from '@/store/cartStore';
+import { useCartStore, type CartItem } from '@/store/cartStore';
 import { useUserStore } from '@/store/userStore';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import Link from 'next/link';
 import Script from 'next/script';
-import { ArrowLeft, Lock, Tag } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Lock, ShoppingBag, Tag, Truck, X } from 'lucide-react';
 import { AddressModal } from '@/components/modals/AddressModal';
 import { CouponModal } from '@/components/modals/CouponModal';
 import { NoticeBanner } from '@/components/ui/NoticeBanner';
@@ -22,6 +23,10 @@ import {
   type ShippingSettings,
 } from '@/lib/shipping';
 import { supabase } from '@/lib/supabase';
+
+const SAVED_INFO_KEY = 'll-checkout-info';
+const CHECKOUT_TOKEN_KEY = 'll-checkout-token';
+const DRAFT_SAVE_DELAY_MS = 1200;
 
 interface CheckoutResponse {
   error?: string;
@@ -45,6 +50,32 @@ interface CheckoutStatusResponse {
 interface CheckoutConfigResponse {
   paymentsEnabled?: boolean;
   shippingSettings?: Partial<ShippingSettings> | null;
+}
+
+interface CouponCheckResponse {
+  error?: string;
+  code?: string;
+  amount?: number;
+}
+
+interface RecoveredSessionResponse {
+  error?: string;
+  session?: {
+    token: string;
+    email: string;
+    phone: string;
+    address: {
+      firstName: string;
+      lastName: string;
+      addressLine: string;
+      apartment: string;
+      city: string;
+      state: string;
+      pincode: string;
+    };
+    items: CartItem[];
+    couponCode: string | null;
+  };
 }
 
 type CheckoutNotice = {
@@ -97,6 +128,49 @@ type RazorpayInstance = {
 
 type RazorpayConstructor = new (options: RazorpayCheckoutOptions) => RazorpayInstance;
 
+type CheckoutForm = {
+  email: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  address: string;
+  apartment: string;
+  city: string;
+  state: string;
+  pincode: string;
+};
+
+type FieldName = keyof CheckoutForm;
+
+const EMPTY_FORM: CheckoutForm = {
+  email: '',
+  phone: '',
+  firstName: '',
+  lastName: '',
+  address: '',
+  apartment: '',
+  city: '',
+  state: '',
+  pincode: '',
+};
+
+// Order in which fields appear on the page, used to focus the first invalid one.
+const FIELD_ORDER: FieldName[] = ['email', 'firstName', 'lastName', 'address', 'city', 'state', 'pincode', 'phone'];
+
+const INPUT_CLASS =
+  'w-full rounded-xl border bg-white px-4 py-3.5 text-[#382F2A] outline-none transition-colors placeholder:text-[#8B7E76] focus:border-[#8B7768]';
+
+const moneyFormatter = new Intl.NumberFormat('en-IN', {
+  style: 'currency',
+  currency: 'INR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
+function formatMoney(value: number) {
+  return moneyFormatter.format(value);
+}
+
 function normalizeFullName(value: string) {
   return value.trim().replace(/\s+/g, ' ');
 }
@@ -116,21 +190,82 @@ function getEffectiveAddressName(addressFullName: string, profileFullName: strin
   return normalizedProfileName || normalizedAddressName;
 }
 
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+}
+
+function getPhoneDigits(value: string) {
+  let digits = value.replace(/\D/g, '');
+  if (digits.length > 10 && digits.startsWith('91')) {
+    digits = digits.slice(2);
+  } else if (digits.length === 11 && digits.startsWith('0')) {
+    digits = digits.slice(1);
+  }
+  return digits;
+}
+
+function isValidPhone(value: string) {
+  return getPhoneDigits(value).length === 10;
+}
+
+function validateForm(form: CheckoutForm) {
+  const errors: Partial<Record<FieldName, string>> = {};
+
+  if (!form.email.trim()) errors.email = 'Enter your email';
+  else if (!isValidEmail(form.email)) errors.email = 'Enter a valid email';
+
+  if (!form.firstName.trim()) errors.firstName = 'Enter a first name';
+  if (!form.lastName.trim()) errors.lastName = 'Enter a last name';
+  if (!form.address.trim()) errors.address = 'Enter an address';
+  if (!form.city.trim()) errors.city = 'Enter a city';
+  if (!form.state.trim()) errors.state = 'Select a state';
+
+  if (!form.pincode.trim()) errors.pincode = 'Enter a PIN code';
+  else if (!/^\d{6}$/.test(form.pincode.trim())) errors.pincode = 'Enter a 6-digit PIN code';
+
+  if (!form.phone.trim()) errors.phone = 'Enter a phone number';
+  else if (!isValidPhone(form.phone)) errors.phone = 'Enter a 10-digit phone number';
+
+  return errors;
+}
+
+function readStorage(key: string) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string | null) {
+  try {
+    if (value === null) window.localStorage.removeItem(key);
+    else window.localStorage.setItem(key, value);
+  } catch {
+    // Storage can be unavailable (private mode); checkout still works without it.
+  }
+}
+
 export default function CheckoutPage() {
-  const { items, total, clearCart } = useCartStore();
+  const { items, total, clearCart, addItem } = useCartStore();
   const { user, setAuthModalOpen } = useUserStore();
   const router = useRouter();
-  const checkoutFlowRef = useRef<HTMLDivElement | null>(null);
-  
-  const [step, setStep] = useState<'contact' | 'shipping' | 'payment'>('contact');
+
+  // The cart lives in localStorage, so wait for the browser before rendering it.
+  const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paymentsEnabled, setPaymentsEnabled] = useState(false);
   const [checkoutConfigLoaded, setCheckoutConfigLoaded] = useState(false);
   const [checkoutNotice, setCheckoutNotice] = useState<CheckoutNotice | null>(null);
   const [shippingSettings, setShippingSettings] = useState<ShippingSettings>(DEFAULT_SHIPPING_SETTINGS);
-  
+
   const [isCouponModalOpen, setCouponModalOpen] = useState(false);
   const [appliedDiscount, setAppliedDiscount] = useState<{ amount: number; code: string } | null>(null);
+  const [couponInput, setCouponInput] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+
   const [savedAddresses, setSavedAddresses] = useState<CustomerAddress[]>([]);
   const [savedAddressesLoading, setSavedAddressesLoading] = useState(false);
   const [savedAddressesError, setSavedAddressesError] = useState<string | null>(null);
@@ -140,22 +275,47 @@ export default function CheckoutPage() {
   const [addressSaving, setAddressSaving] = useState(false);
   const [addressModalError, setAddressModalError] = useState<string | null>(null);
   const [profileFullName, setProfileFullName] = useState('');
-  
-  const [formData, setFormData] = useState({
-    email: user?.email || '',
-    phone: '',
-    firstName: '',
-    lastName: '',
-    address: '',
-    apartment: '',
-    city: '',
-    state: '',
-    pincode: ''
+
+  const [formData, setFormData] = useState<CheckoutForm>({ ...EMPTY_FORM, email: user?.email || '' });
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [saveInfo, setSaveInfo] = useState(true);
+
+  const checkoutTokenRef = useRef<string | null>(null);
+  // True once details were restored from a recovery link or a previous visit,
+  // so the default saved address does not overwrite them.
+  const prefilledRef = useRef(false);
+
+  const errors = useMemo(() => validateForm(formData), [formData]);
+  const isFormValid = Object.keys(errors).length === 0;
+  const fieldError = (name: FieldName) => ((submitted || touched[name]) ? errors[name] : undefined);
+
+  const setField = (name: FieldName, value: string) => {
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setField(e.target.name as FieldName, e.target.value);
+    if (e.target.name !== 'email' && e.target.name !== 'phone') {
+      setSelectedAddressId(null);
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setTouched((current) => ({ ...current, [e.target.name]: true }));
+  };
+
+  const fieldProps = (name: FieldName) => ({
+    name,
+    value: formData[name],
+    onChange: handleChange,
+    onBlur: handleBlur,
+    'aria-invalid': Boolean(fieldError(name)),
+    className: `${INPUT_CLASS} ${fieldError(name) ? 'border-[#A63A3A]' : 'border-[#D8CBBE]'}`,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
-  };
+  const renderFieldError = (name: FieldName) =>
+    fieldError(name) ? <p className="mt-1.5 text-xs text-[#A63A3A]">{fieldError(name)}</p> : null;
 
   const applyAddressToForm = useCallback((address: CustomerAddress) => {
     const effectiveFullName = getEffectiveAddressName(address.fullName, profileFullName);
@@ -175,6 +335,85 @@ export default function CheckoutPage() {
       pincode: address.pincode,
     }));
   }, [profileFullName, user?.email]);
+
+  // Restore a recovery link (/checkout?recover=<token>) or details saved on a previous visit.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function restore() {
+      const recoverToken = new URLSearchParams(window.location.search).get('recover');
+
+      if (recoverToken) {
+        try {
+          const response = await fetch(`/api/checkout/session?token=${encodeURIComponent(recoverToken)}`, { cache: 'no-store' });
+          const payload = await response.json() as RecoveredSessionResponse;
+          if (cancelled) return;
+
+          if (!response.ok || !payload.session) {
+            setCheckoutNotice({ tone: 'error', text: payload.error || 'This checkout link is no longer available.' });
+          } else {
+            const session = payload.session;
+            prefilledRef.current = true;
+            checkoutTokenRef.current = session.token;
+            writeStorage(CHECKOUT_TOKEN_KEY, session.token);
+
+            clearCart();
+            session.items.forEach((item) => addItem(item));
+
+            setFormData({
+              email: session.email,
+              phone: session.phone,
+              firstName: session.address.firstName,
+              lastName: session.address.lastName,
+              address: session.address.addressLine,
+              apartment: session.address.apartment,
+              city: session.address.city,
+              state: session.address.state,
+              pincode: session.address.pincode,
+            });
+            if (session.couponCode) setCouponInput(session.couponCode);
+
+            setCheckoutNotice(
+              session.items.length > 0
+                ? { tone: 'success', text: 'Welcome back! We saved your cart and details so you can finish your order.' }
+                : { tone: 'info', text: 'The items from your saved checkout are no longer available.' }
+            );
+          }
+        } catch (error) {
+          console.error('Could not restore checkout', error);
+        }
+
+        window.history.replaceState(null, '', window.location.pathname);
+      } else {
+        checkoutTokenRef.current = readStorage(CHECKOUT_TOKEN_KEY);
+
+        try {
+          const saved = JSON.parse(readStorage(SAVED_INFO_KEY) || 'null') as Partial<CheckoutForm> | null;
+          if (saved && typeof saved === 'object') {
+            prefilledRef.current = true;
+            setFormData((current) => {
+              const next = { ...current };
+              (Object.keys(EMPTY_FORM) as FieldName[]).forEach((key) => {
+                if (!next[key] && typeof saved[key] === 'string') next[key] = saved[key] as string;
+              });
+              return next;
+            });
+          }
+        } catch {
+          // Ignore unreadable saved details.
+        }
+      }
+
+      if (!cancelled) setReady(true);
+    }
+
+    void restore();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     async function loadCheckoutConfig() {
@@ -236,7 +475,7 @@ export default function CheckoutPage() {
         setProfileFullName(profile.fullName);
         setFormData((current) => ({
           ...current,
-          email: user.email || current.email,
+          email: current.email || user.email || '',
           phone: current.phone || profile.phone,
           firstName: current.firstName || splitAddressFullName(profile.fullName).firstName,
           lastName: current.lastName || splitAddressFullName(profile.fullName).lastName,
@@ -245,7 +484,7 @@ export default function CheckoutPage() {
         setSavedAddresses(addresses);
 
         const defaultAddress = addresses.find((address) => address.isDefault) || addresses[0];
-        if (defaultAddress) {
+        if (defaultAddress && !prefilledRef.current) {
           applyAddressToForm(defaultAddress);
         }
       } catch (err: unknown) {
@@ -311,7 +550,11 @@ export default function CheckoutPage() {
             .select('id, products(is_free_delivery)')
             .in('id', variantIds);
 
-          if (vars && vars.some((v: any) => {
+          type VariantFreeDeliveryRow = {
+            products: { is_free_delivery?: boolean | null } | Array<{ is_free_delivery?: boolean | null }> | null;
+          };
+
+          if (((vars || []) as VariantFreeDeliveryRow[]).some((v) => {
             const p = v.products;
             return Array.isArray(p) ? p[0]?.is_free_delivery : p?.is_free_delivery;
           })) {
@@ -334,37 +577,114 @@ export default function CheckoutPage() {
     };
   }, [items]);
 
+  // Discount codes are always checked on the server so the preview matches what is charged.
+  const applyCoupon = useCallback(async (rawCode: string, options?: { silent?: boolean }) => {
+    const code = rawCode.trim().toUpperCase();
+    if (!code) return;
+
+    setCouponLoading(true);
+    setCouponError(null);
+
+    try {
+      const response = await fetch('/api/checkout/coupon', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, subtotal: useCartStore.getState().total }),
+      });
+      const payload = await response.json() as CouponCheckResponse;
+
+      if (!response.ok || !payload.code || typeof payload.amount !== 'number') {
+        setAppliedDiscount(null);
+        if (!options?.silent) setCouponError(payload.error || 'This code is not valid.');
+        return;
+      }
+
+      setAppliedDiscount({ code: payload.code, amount: payload.amount });
+      setCouponInput('');
+    } catch {
+      if (!options?.silent) setCouponError('Could not check this code. Please try again.');
+    } finally {
+      setCouponLoading(false);
+    }
+  }, []);
+
+  // Re-check the applied code whenever the cart value changes.
+  const appliedCode = appliedDiscount?.code || null;
+  const lastCheckedTotalRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (!ready) return;
+    const previousTotal = lastCheckedTotalRef.current;
+    lastCheckedTotalRef.current = total;
+
+    if (appliedCode && previousTotal !== null && previousTotal !== total && total > 0) {
+      void applyCoupon(appliedCode, { silent: true });
+    }
+  }, [appliedCode, applyCoupon, ready, total]);
+
+  // Save the checkout as the shopper types so it can be recovered if they leave.
+  useEffect(() => {
+    if (!ready || items.length === 0) return;
+    if (!isValidEmail(formData.email) && !isValidPhone(formData.phone)) return;
+
+    const timer = window.setTimeout(async () => {
+      try {
+        const response = await fetch('/api/checkout/session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: checkoutTokenRef.current,
+            userId: user?.id || null,
+            email: isValidEmail(formData.email) ? formData.email : null,
+            phone: isValidPhone(formData.phone) ? formData.phone : null,
+            address: {
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              addressLine: formData.address,
+              apartment: formData.apartment,
+              city: formData.city,
+              state: formData.state,
+              pincode: formData.pincode,
+            },
+            items,
+            couponCode: appliedCode,
+          }),
+        });
+        const payload = await response.json() as { token?: string | null };
+        if (response.ok && payload.token) {
+          checkoutTokenRef.current = payload.token;
+          writeStorage(CHECKOUT_TOKEN_KEY, payload.token);
+        }
+      } catch {
+        // Saving the draft is best-effort and must never interrupt checkout.
+      }
+    }, DRAFT_SAVE_DELAY_MS);
+
+    return () => window.clearTimeout(timer);
+  }, [appliedCode, formData, items, ready, user?.id]);
+
   const isPaymentUnavailable = checkoutConfigLoaded && !paymentsEnabled;
   const hasFreeDeliveryItem = items.some((item) => Boolean(item.is_free_delivery)) || dbFreeDelivery;
-  const shippingCost =
-    calculateShippingCharge({
-      subtotal: total,
-      discount: appliedDiscount?.amount || 0,
-      state: formData.state,
-      settings: shippingSettings,
-      hasFreeDeliveryItem,
-    }) ?? 0;
-  const isContactStepValid = Boolean(
-    formData.email &&
-      formData.phone &&
-      formData.firstName &&
-      formData.lastName &&
-      formData.address &&
-      formData.city &&
-      formData.state &&
-      formData.pincode
-  );
-  const orderTotal = Math.max(0, total - (appliedDiscount?.amount || 0) + shippingCost);
-  const contactCtaLabel = 'Continue to Shipping';
-  const shippingCtaLabel = 'Continue to Payment';
-  const paymentAmountLabel = `Pay Now • ₹${orderTotal.toFixed(2)}`;
-  const paymentCtaLabel = loading
+  const discountAmount = Math.min(appliedDiscount?.amount || 0, total);
+  const shippingQuote = calculateShippingCharge({
+    subtotal: total,
+    discount: discountAmount,
+    state: formData.state,
+    settings: shippingSettings,
+    hasFreeDeliveryItem,
+  });
+  const shippingCost = shippingQuote ?? 0;
+  const shippingLabel =
+    shippingQuote === null ? 'Enter state' : shippingQuote === 0 ? 'FREE' : formatMoney(shippingQuote);
+  const orderTotal = Math.max(0, total - discountAmount + shippingCost);
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const payButtonLabel = loading
     ? 'Processing...'
     : !checkoutConfigLoaded
-      ? 'Checking Payment...'
+      ? 'Checking payment...'
       : !paymentsEnabled
-        ? 'Payments Unavailable'
-        : paymentAmountLabel;
+        ? 'Payments unavailable'
+        : `Pay now · ${formatMoney(orderTotal)}`;
+  const isPayDisabled = loading || !checkoutConfigLoaded || !paymentsEnabled;
 
   const openAddAddressModal = () => {
     setEditingAddress(null);
@@ -412,7 +732,23 @@ export default function CheckoutPage() {
     }
   };
 
+  const focusFirstInvalidField = () => {
+    const firstInvalid = FIELD_ORDER.find((name) => errors[name]);
+    if (!firstInvalid) return;
+
+    const element = document.querySelector<HTMLElement>(`[name="${firstInvalid}"]`);
+    element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    element?.focus({ preventScroll: true });
+  };
+
   const handleCheckout = async () => {
+    setSubmitted(true);
+
+    if (!isFormValid) {
+      focusFirstInvalidField();
+      return;
+    }
+
     if (!paymentsEnabled) {
       setCheckoutNotice({
         tone: 'error',
@@ -420,6 +756,8 @@ export default function CheckoutPage() {
       });
       return;
     }
+
+    writeStorage(SAVED_INFO_KEY, saveInfo ? JSON.stringify(formData) : null);
 
     setLoading(true);
     setCheckoutNotice(null);
@@ -430,21 +768,21 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           data: {
             userId: user?.id,
-            guestEmail: formData.email,
+            guestEmail: formData.email.trim(),
             guestName: `${formData.firstName} ${formData.lastName}`.trim(),
-            guestPhone: formData.phone,
+            guestPhone: formData.phone.trim(),
             address: {
-              firstName: formData.firstName,
-              lastName: formData.lastName,
+              firstName: formData.firstName.trim(),
+              lastName: formData.lastName.trim(),
               addressLine: formData.address,
               apartment: formData.apartment,
               city: formData.city,
               state: formData.state,
-              pincode: formData.pincode
+              pincode: formData.pincode.trim()
             },
             shippingCharge: shippingCost,
-            discountAmount: appliedDiscount?.amount,
             couponCode: appliedDiscount?.code,
+            checkoutToken: checkoutTokenRef.current,
           },
           items,
           subtotal: total
@@ -523,7 +861,7 @@ export default function CheckoutPage() {
                 fbq('track', 'Purchase', {
                   content_ids: items.map(item => item.id),
                   content_type: 'product',
-                  value: orderTotal,
+                  value: resData.amount / 100,
                   currency: 'INR',
                   num_items: items.reduce((sum, item) => sum + item.quantity, 0),
                   order_id: resData.orderId
@@ -532,6 +870,8 @@ export default function CheckoutPage() {
             }
 
             checkoutTerminalStateHandled = true;
+            checkoutTokenRef.current = null;
+            writeStorage(CHECKOUT_TOKEN_KEY, null);
             clearCart();
             routeToOrders(resData.orderId, 'paid');
           } catch (verificationError) {
@@ -545,8 +885,8 @@ export default function CheckoutPage() {
         },
         prefill: {
           name: `${formData.firstName} ${formData.lastName}`.trim(),
-          email: formData.email,
-          contact: formData.phone,
+          email: formData.email.trim(),
+          contact: getPhoneDigits(formData.phone),
         },
         theme: {
           color: '#8B7768'
@@ -576,33 +916,28 @@ export default function CheckoutPage() {
         tone: 'error',
         text: err instanceof Error ? err.message : 'Order failed. Please try again.',
       });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
   };
 
-  const scrollCheckoutFlowToTop = useCallback(() => {
-    const sectionTop = checkoutFlowRef.current?.getBoundingClientRect().top;
-    if (sectionTop === undefined) return;
-
-    window.scrollTo({
-      top: Math.max(0, window.scrollY + sectionTop - 132),
-      behavior: 'smooth',
-    });
-  }, []);
-
-  const moveToStep = (nextStep: 'contact' | 'shipping' | 'payment') => {
-    setStep(nextStep);
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        scrollCheckoutFlowToTop();
-      });
-    });
-  };
+  if (!ready) {
+    return (
+      <main className="flex min-h-[70vh] w-full items-center justify-center bg-[#F7F3ED] text-sm font-sans text-[#63574F]">
+        Loading checkout...
+      </main>
+    );
+  }
 
   if (items.length === 0) {
     return (
       <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
+        {checkoutNotice && (
+          <div className="mb-8 w-full max-w-md text-left">
+            <NoticeBanner tone={checkoutNotice.tone}>{checkoutNotice.text}</NoticeBanner>
+          </div>
+        )}
         <span className="text-[#8B7768] uppercase tracking-[0.24em] text-xs font-sans font-medium mb-3 block">
           Checkout
         </span>
@@ -622,473 +957,407 @@ export default function CheckoutPage() {
     );
   }
 
-  const handlePrimaryAction = () => {
-    if (step === 'contact') {
-      moveToStep('shipping');
-      return;
-    }
+  const orderSummary = (
+    <div className="font-sans text-sm">
+      <div className="max-h-[42vh] space-y-4 overflow-y-auto pr-1 pt-2">
+        {items.map((item) => (
+          <div key={`${item.id}-${item.variantId || 'default'}`} className="flex items-center gap-4">
+            <div className="relative h-16 w-16 shrink-0">
+              <div className="relative h-full w-full overflow-hidden rounded-xl border border-[#D8CBBE] bg-white">
+                {item.image ? (
+                  <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
+                ) : (
+                  <ShoppingBag className="absolute inset-0 m-auto h-5 w-5 text-[#B7A596]" />
+                )}
+              </div>
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#6D5C50] px-1.5 text-[11px] font-semibold text-[#F7F3ED]">
+                {item.quantity}
+              </span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <span className="line-clamp-2 block font-medium text-[#382F2A]">{item.name}</span>
+              {item.variantLabel && (
+                <span className="mt-0.5 line-clamp-1 block text-xs text-[#63574F]">{item.variantLabel}</span>
+              )}
+            </div>
+            <span className="shrink-0 font-medium text-[#382F2A]">{formatMoney(item.price * item.quantity)}</span>
+          </div>
+        ))}
+      </div>
 
-    if (step === 'shipping') {
-      moveToStep('payment');
-      return;
-    }
+      <div className="mt-6 border-t border-[#D8CBBE] pt-5">
+        {appliedDiscount ? (
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#2C6E49]/30 bg-[#F2F7F4] py-1.5 pl-3 pr-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#2C6E49]">
+              <Tag className="h-3.5 w-3.5" />
+              {appliedDiscount.code}
+              <button
+                type="button"
+                aria-label={`Remove discount code ${appliedDiscount.code}`}
+                onClick={() => setAppliedDiscount(null)}
+                className="rounded-full p-1 transition-colors hover:bg-[#2C6E49]/10"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+            <span className="text-xs text-[#2C6E49]">You save {formatMoney(discountAmount)}</span>
+          </div>
+        ) : (
+          <>
+            <form
+              className="flex gap-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void applyCoupon(couponInput);
+              }}
+            >
+              <label htmlFor="discount-code" className="sr-only">Discount code</label>
+              <input
+                id="discount-code"
+                value={couponInput}
+                onChange={(event) => {
+                  setCouponInput(event.target.value.toUpperCase());
+                  setCouponError(null);
+                }}
+                placeholder="Discount code"
+                autoComplete="off"
+                className={`${INPUT_CLASS} min-w-0 flex-1 py-3 uppercase tracking-wider ${couponError ? 'border-[#A63A3A]' : 'border-[#D8CBBE]'}`}
+              />
+              <button
+                type="submit"
+                disabled={!couponInput.trim() || couponLoading}
+                className="shrink-0 rounded-xl bg-[#6D5C50] px-5 text-xs font-semibold uppercase tracking-[0.14em] text-[#F7F3ED] transition-colors hover:bg-[#58483D] disabled:opacity-40"
+              >
+                {couponLoading ? '...' : 'Apply'}
+              </button>
+            </form>
+            {couponError && <p className="mt-1.5 text-xs text-[#A63A3A]">{couponError}</p>}
+            <button
+              type="button"
+              onClick={() => setCouponModalOpen(true)}
+              className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#8B7768] underline underline-offset-4 transition-colors hover:text-[#58483D]"
+            >
+              <Tag className="h-3.5 w-3.5" /> View available offers
+            </button>
+          </>
+        )}
+      </div>
 
-    void handleCheckout();
-  };
-
-  const isPrimaryActionDisabled =
-    step === 'contact'
-      ? !isContactStepValid
-      : step === 'payment'
-        ? loading || !checkoutConfigLoaded || !paymentsEnabled
-        : false;
-
-  const primaryActionLabel =
-    step === 'contact'
-      ? contactCtaLabel
-      : step === 'shipping'
-        ? shippingCtaLabel
-        : paymentCtaLabel;
+      <div className="mt-5 space-y-2.5 border-t border-[#D8CBBE] pt-5">
+        <div className="flex justify-between text-[#63574F]">
+          <span>Subtotal · {itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
+          <span className="font-medium text-[#382F2A]">{formatMoney(total)}</span>
+        </div>
+        {appliedDiscount && (
+          <div className="flex justify-between text-[#2C6E49]">
+            <span>Discount</span>
+            <span>-{formatMoney(discountAmount)}</span>
+          </div>
+        )}
+        <div className="flex justify-between text-[#63574F]">
+          <span>Shipping</span>
+          <span className={shippingQuote === null ? 'text-[#8B7E76]' : 'font-medium text-[#382F2A]'}>{shippingLabel}</span>
+        </div>
+        <div className="flex items-baseline justify-between pt-3 text-[#382F2A]">
+          <span className="font-heading text-xl">Total</span>
+          <span className="text-xl font-bold">
+            <span className="mr-2 text-xs font-normal text-[#8B7E76]">INR</span>
+            {formatMoney(orderTotal)}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
-      <div className="mx-auto max-w-7xl px-4 pb-32 pt-8 md:px-12 md:py-14 md:pb-16">
+      {/* Mobile order summary, collapsed by default */}
+      <div className="border-b border-[#D8CBBE] bg-[#EFE7DE] lg:hidden">
+        <button
+          type="button"
+          onClick={() => setSummaryOpen((open) => !open)}
+          aria-expanded={summaryOpen}
+          className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 font-sans text-sm"
+        >
+          <span className="flex items-center gap-2 text-[#6D5C50]">
+            <ShoppingBag className="h-4 w-4" />
+            {summaryOpen ? 'Hide' : 'Show'} order summary
+            <ChevronDown className={`h-4 w-4 transition-transform ${summaryOpen ? 'rotate-180' : ''}`} />
+          </span>
+          <span className="text-base font-bold text-[#382F2A]">{formatMoney(orderTotal)}</span>
+        </button>
+        {summaryOpen && <div className="mx-auto max-w-7xl px-4 pb-6">{orderSummary}</div>}
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 pb-36 pt-6 md:px-12 md:py-12 lg:pb-16">
         <Link href="/cart" className="mb-6 flex items-center gap-2 text-xs font-sans font-medium text-[#63574F] transition-colors hover:text-[#8B7768] md:mb-8">
           <ArrowLeft className="w-4 h-4" /> Return to Cart
         </Link>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-20">
-          {/* Checkout Flow */}
-          <div ref={checkoutFlowRef} className="space-y-8 md:space-y-10">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-16">
+          <form
+            noValidate
+            className="space-y-10 font-sans text-sm"
+            onSubmit={(event) => {
+              event.preventDefault();
+              void handleCheckout();
+            }}
+          >
             {checkoutNotice && (
-              <NoticeBanner
-                tone={checkoutNotice.tone}
-                onDismiss={() => setCheckoutNotice(null)}
-              >
+              <NoticeBanner tone={checkoutNotice.tone} onDismiss={() => setCheckoutNotice(null)}>
                 {checkoutNotice.text}
               </NoticeBanner>
             )}
 
-            {/* Breadcrumbs */}
-            <nav className="flex flex-wrap items-center gap-2.5 text-xs font-sans">
-              <button 
-                onClick={() => moveToStep('contact')}
-                className={`rounded-full border px-4 py-1.5 transition-colors ${
-                  step === 'contact'
-                    ? 'border-[#8B7768] bg-[#EFE7DE] text-[#382F2A] font-semibold'
-                    : 'border-[#B7A596]/40 bg-white text-[#63574F] hover:text-[#382F2A]'
-                }`}
-              >
-                1. Contact
-              </button>
-              <span className="text-[#B7A596]">/</span>
-              <button 
-                disabled={step === 'contact'}
-                onClick={() => moveToStep('shipping')}
-                className={`rounded-full border px-4 py-1.5 transition-colors ${
-                  step === 'contact' ? 'cursor-not-allowed opacity-50' : 'hover:text-[#382F2A]'
-                } ${
-                  step === 'shipping'
-                    ? 'border-[#8B7768] bg-[#EFE7DE] text-[#382F2A] font-semibold'
-                    : 'border-[#B7A596]/40 bg-white text-[#63574F]'
-                }`}
-              >
-                2. Shipping
-              </button>
-              <span className="text-[#B7A596]">/</span>
-              <button 
-                disabled={step !== 'payment'}
-                className={`rounded-full border px-4 py-1.5 transition-colors ${
-                  step !== 'payment' ? 'cursor-not-allowed opacity-50' : 'hover:text-[#382F2A]'
-                } ${
-                  step === 'payment'
-                    ? 'border-[#8B7768] bg-[#EFE7DE] text-[#382F2A] font-semibold'
-                    : 'border-[#B7A596]/40 bg-white text-[#63574F]'
-                }`}
-              >
-                3. Payment
-              </button>
-            </nav>
-
-          <details className="rounded-2xl border border-[#D8CBBE] bg-white p-4 shadow-xs lg:hidden" open={step === 'payment'}>
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.22em] text-[#8B7768] font-sans font-medium">Order Summary</p>
-                <p className="mt-1.5 text-lg font-heading text-[#382F2A]">₹{orderTotal.toFixed(2)}</p>
-              </div>
-              <span className="text-xs uppercase tracking-[0.18em] text-[#6D5C50] font-sans font-medium">View details</span>
-            </summary>
-
-            <div className="mt-4 space-y-4 border-t border-[#E5DACF] pt-4 text-sm font-sans">
-              {items.map((item) => (
-                <div key={`${item.id}-${item.variantId || 'default'}-mobile`} className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <span className="line-clamp-1 block text-[#382F2A] font-medium">{item.name}</span>
-                    <span className="mt-1 block text-xs text-[#8B7E76]">
-                      Qty {item.quantity}{item.variantLabel ? ` • ${item.variantLabel}` : ''}
-                    </span>
-                  </div>
-                  <span className="shrink-0 text-[#382F2A]">₹{(item.price * item.quantity).toFixed(2)}</span>
-                </div>
-              ))}
-
-              <div className="space-y-2 border-t border-[#E5DACF] pt-4 text-sm">
-                <div className="flex justify-between text-[#63574F]">
-                  <span>Subtotal</span>
-                  <span>₹{total.toFixed(2)}</span>
-                </div>
-                {appliedDiscount && (
-                  <div className="flex justify-between text-[#2C6E49]">
-                    <span>Discount</span>
-                    <span>-₹{appliedDiscount.amount.toFixed(2)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-[#63574F]">
-                  <span>Shipping</span>
-                  <span>
-                    {hasFreeDeliveryItem
-                      ? 'FREE'
-                      : formData.state
-                        ? shippingCost === 0
-                          ? 'FREE'
-                          : `₹${shippingCost.toFixed(2)}`
-                        : 'Enter state'}
-                  </span>
-                </div>
-                <div className="flex justify-between pt-2 text-base font-heading text-[#382F2A]">
-                  <span>Total</span>
-                  <span className="text-[#6D5C50] font-semibold">₹{orderTotal.toFixed(2)}</span>
-                </div>
-              </div>
-
-              {!appliedDiscount && (
-                <button
-                  onClick={() => setCouponModalOpen(true)}
-                  className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.18em] text-[#6D5C50] transition-colors hover:text-[#382F2A]"
-                >
-                  <Tag className="h-4 w-4 text-[#C5A574]" /> Apply Coupon
-                </button>
-              )}
-            </div>
-          </details>
-
-          {/* Contact Step */}
-          {step === 'contact' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-sm font-sans">
-              <h2 className="mb-4 text-2xl font-heading font-normal text-[#382F2A] md:mb-6">Contact Information</h2>
-              
-              {!user && (
-                <div className="mb-6 rounded-2xl border border-[#D8CBBE] bg-white p-4 shadow-xs">
-                  <p className="text-[#63574F] mb-3">Already have an account?</p>
-                  <button onClick={() => setAuthModalOpen(true)} className="text-[#6D5C50] font-medium underline underline-offset-4 hover:text-[#382F2A] transition-colors">
-                    Log in for faster checkout
+            {/* Contact */}
+            <section>
+              <div className="mb-4 flex items-baseline justify-between gap-4">
+                <h2 className="text-2xl font-heading font-normal text-[#382F2A]">Contact</h2>
+                {!user && (
+                  <button
+                    type="button"
+                    onClick={() => setAuthModalOpen(true)}
+                    className="text-xs font-medium text-[#6D5C50] underline underline-offset-4 transition-colors hover:text-[#382F2A]"
+                  >
+                    Log in
                   </button>
-                </div>
-              )}
+                )}
+              </div>
+              <label htmlFor="checkout-email" className="sr-only">Email</label>
+              <input
+                id="checkout-email"
+                {...fieldProps('email')}
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="Email"
+              />
+              {renderFieldError('email')}
+              <p className="mt-2 text-xs text-[#8B7E76]">Your order confirmation and invoice will be sent here.</p>
+            </section>
 
-              <input 
-                name="email" value={formData.email} onChange={handleChange}
-                type="email" placeholder="Email Address" 
-                className="w-full rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]"
-              />
-              <input 
-                name="phone" value={formData.phone} onChange={handleChange}
-                type="tel" placeholder="Phone Number" 
-                className="w-full rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]"
-              />
+            {/* Delivery */}
+            <section>
+              <h2 className="mb-4 text-2xl font-heading font-normal text-[#382F2A]">Delivery</h2>
 
               {user && (
-                <div className="space-y-4 rounded-2xl border border-[#D8CBBE] bg-white p-4 md:p-6 shadow-xs">
-                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-heading font-normal text-[#382F2A]">Saved Addresses</h3>
-                      <p className="text-[#63574F] text-xs mt-1">
-                        Select an address, edit an existing one, or add a new address for this account.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={openAddAddressModal}
-                      className="rounded-full border border-[#B7A596] bg-[#F7F3ED] px-4 py-2 text-xs font-medium text-[#382F2A] hover:border-[#6D5C50] hover:bg-[#6D5C50] hover:text-[#F7F3ED] transition-colors"
-                    >
-                      Add New
-                    </button>
-                  </div>
-
+                <div className="mb-5 space-y-3">
                   {savedAddressesError ? <p className="text-sm text-[#A63A3A]">{savedAddressesError}</p> : null}
 
                   {savedAddressesLoading ? (
                     <p className="text-[#8B7E76]">Loading saved addresses...</p>
-                  ) : savedAddresses.length === 0 ? (
-                    <p className="text-[#8B7E76]">No saved addresses yet. Add one to speed up future checkouts.</p>
                   ) : (
-                    <div className="grid gap-3">
-                      {savedAddresses.map((address) => (
-                        <div
-                          key={address.id}
-                          className={`rounded-2xl border p-4 transition-colors ${
-                            selectedAddressId === address.id ? 'border-[#8B7768] bg-[#EFE7DE]/60' : 'border-[#E5DACF] bg-[#F7F3ED]/50'
-                          }`}
+                    savedAddresses.map((address) => (
+                      <div
+                        key={address.id}
+                        className={`flex items-start justify-between gap-4 rounded-2xl border p-4 transition-colors ${
+                          selectedAddressId === address.id ? 'border-[#8B7768] bg-[#EFE7DE]/60' : 'border-[#E5DACF] bg-white'
+                        }`}
+                      >
+                        <button type="button" onClick={() => applyAddressToForm(address)} className="flex flex-1 items-start gap-3 text-left">
+                          <span
+                            aria-hidden="true"
+                            className={`mt-1 h-4 w-4 shrink-0 rounded-full border ${
+                              selectedAddressId === address.id ? 'border-[5px] border-[#6D5C50]' : 'border-[#B7A596]'
+                            }`}
+                          />
+                          <span>
+                            <span className="flex flex-wrap items-center gap-2 font-medium text-[#382F2A]">
+                              {getEffectiveAddressName(address.fullName, profileFullName)}
+                              {address.isDefault ? (
+                                <span className="rounded-full border border-[#D8CBBE] bg-[#EFE7DE] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#6D5C50]">
+                                  Default
+                                </span>
+                              ) : null}
+                            </span>
+                            <span className="mt-1 block text-[#63574F]">
+                              {address.addressLine}, {address.city}, {address.state} {address.pincode}
+                            </span>
+                            <span className="block text-[#63574F]">{address.phone}</span>
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openEditAddressModal(address)}
+                          className="text-xs font-medium text-[#6D5C50] underline underline-offset-4 hover:text-[#382F2A]"
                         >
-                          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                            <button
-                              type="button"
-                              onClick={() => applyAddressToForm(address)}
-                              className="text-left flex-1"
-                            >
-                              <div className="flex items-center gap-3">
-                                <p className="font-medium text-[#382F2A]">
-                                  {getEffectiveAddressName(address.fullName, profileFullName)}
-                                </p>
-                                {address.isDefault ? (
-                                  <span className="rounded-full bg-[#EFE7DE] border border-[#D8CBBE] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-[#6D5C50]">
-                                    Default
-                                  </span>
-                                ) : null}
-                              </div>
-                              <p className="text-[#63574F] mt-1">{address.phone}</p>
-                              <p className="text-[#382F2A] mt-1">{address.addressLine}</p>
-                              <p className="text-[#63574F]">{address.city}, {address.state} {address.pincode}</p>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => openEditAddressModal(address)}
-                              className="rounded-full border border-[#B7A596] bg-white px-4 py-1.5 text-xs font-medium text-[#382F2A] hover:border-[#6D5C50] hover:bg-[#6D5C50] hover:text-[#F7F3ED] transition-colors"
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                          Edit
+                        </button>
+                      </div>
+                    ))
                   )}
+
+                  <button
+                    type="button"
+                    onClick={openAddAddressModal}
+                    className="text-xs font-medium text-[#6D5C50] underline underline-offset-4 hover:text-[#382F2A]"
+                  >
+                    + Save a new address to my account
+                  </button>
                 </div>
               )}
-              
-              <h2 className="mb-4 mt-10 text-2xl font-heading font-normal text-[#382F2A] md:mb-6 md:mt-12">Shipping Address</h2>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <input name="firstName" value={formData.firstName} onChange={handleChange} placeholder="First Name" className="col-span-1 rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]" />
-                <input name="lastName" value={formData.lastName} onChange={handleChange} placeholder="Last Name" className="col-span-1 rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]" />
-                <input name="address" value={formData.address} onChange={handleChange} placeholder="Address" className="col-span-2 rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]" />
-                <input name="apartment" value={formData.apartment} onChange={handleChange} placeholder="Apartment, suite, etc. (optional)" className="col-span-2 rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]" />
-                <input name="city" value={formData.city} onChange={handleChange} placeholder="City" className="col-span-2 md:col-span-1 rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]" />
-                <select
-                  name="state"
-                  value={formData.state}
-                  onChange={(event) => setFormData((current) => ({ ...current, state: event.target.value }))}
-                  className="col-span-2 md:col-span-1 rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]"
-                >
-                  <option value="" className="bg-white text-[#8B7E76]">Select State</option>
-                  {INDIA_STATES.map((state) => (
-                    <option key={state} value={state} className="bg-white text-[#382F2A]">
-                      {state}
-                    </option>
-                  ))}
-                </select>
-                <input name="pincode" value={formData.pincode} onChange={handleChange} placeholder="Postal Code" className="col-span-2 rounded-xl bg-white border border-[#D8CBBE] p-4 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]" />
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2 rounded-xl border border-[#D8CBBE] bg-[#EFE7DE]/50 px-4 py-3.5 text-[#63574F]">
+                  Country/Region: <span className="font-medium text-[#382F2A]">India</span>
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label htmlFor="checkout-first-name" className="sr-only">First name</label>
+                  <input id="checkout-first-name" {...fieldProps('firstName')} autoComplete="given-name" placeholder="First name" />
+                  {renderFieldError('firstName')}
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label htmlFor="checkout-last-name" className="sr-only">Last name</label>
+                  <input id="checkout-last-name" {...fieldProps('lastName')} autoComplete="family-name" placeholder="Last name" />
+                  {renderFieldError('lastName')}
+                </div>
+                <div className="col-span-2">
+                  <label htmlFor="checkout-address" className="sr-only">Address</label>
+                  <input id="checkout-address" {...fieldProps('address')} autoComplete="address-line1" placeholder="Address (house no., street, area)" />
+                  {renderFieldError('address')}
+                </div>
+                <div className="col-span-2">
+                  <label htmlFor="checkout-apartment" className="sr-only">Apartment, suite, landmark (optional)</label>
+                  <input id="checkout-apartment" {...fieldProps('apartment')} autoComplete="address-line2" placeholder="Apartment, suite, landmark (optional)" />
+                </div>
+                <div className="col-span-2 sm:col-span-1">
+                  <label htmlFor="checkout-city" className="sr-only">City</label>
+                  <input id="checkout-city" {...fieldProps('city')} autoComplete="address-level2" placeholder="City" />
+                  {renderFieldError('city')}
+                </div>
+                <div className="col-span-1">
+                  <label htmlFor="checkout-state" className="sr-only">State</label>
+                  <select id="checkout-state" {...fieldProps('state')} autoComplete="address-level1">
+                    <option value="">State</option>
+                    {INDIA_STATES.map((state) => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
+                  </select>
+                  {renderFieldError('state')}
+                </div>
+                <div className="col-span-1">
+                  <label htmlFor="checkout-pincode" className="sr-only">PIN code</label>
+                  <input
+                    id="checkout-pincode"
+                    {...fieldProps('pincode')}
+                    inputMode="numeric"
+                    maxLength={6}
+                    autoComplete="postal-code"
+                    placeholder="PIN code"
+                  />
+                  {renderFieldError('pincode')}
+                </div>
+                <div className="col-span-2">
+                  <label htmlFor="checkout-phone" className="sr-only">Phone</label>
+                  <input id="checkout-phone" {...fieldProps('phone')} type="tel" inputMode="tel" autoComplete="tel" placeholder="Phone (for delivery updates)" />
+                  {renderFieldError('phone')}
+                </div>
               </div>
 
-              <button 
-                onClick={() => moveToStep('shipping')}
-                disabled={!isContactStepValid}
-                className="mt-8 hidden w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] py-4 text-xs font-sans font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 md:block"
-              >
-                {contactCtaLabel}
-              </button>
-            </div>
-          )}
+              <label className="mt-4 flex cursor-pointer items-center gap-3 text-[#63574F]">
+                <input
+                  type="checkbox"
+                  checked={saveInfo}
+                  onChange={(event) => setSaveInfo(event.target.checked)}
+                  className="h-4 w-4 rounded border-[#B7A596] accent-[#6D5C50]"
+                />
+                Save this information for next time
+              </label>
+            </section>
 
-          {/* Shipping Step */}
-          {step === 'shipping' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-sm">
-              <h2 className="mb-4 text-2xl font-heading md:mb-6">Delivery Charge</h2>
-
-              {hasFreeDeliveryItem ? (
-                <div className="rounded-2xl border border-[#2C6E49]/30 bg-[#F2F7F4] p-4 md:p-6 text-[#2C6E49] space-y-1">
-                  <div className="font-semibold text-base flex items-center gap-2">
-                    <span>🎉 Free Delivery Applied</span>
-                  </div>
-                  <p className="text-xs text-[#63574F]">
-                    Your cart contains a product with free delivery. Shipping charges are completely waived for this order!
-                  </p>
+            {/* Shipping method */}
+            <section>
+              <h2 className="mb-4 text-2xl font-heading font-normal text-[#382F2A]">Shipping method</h2>
+              {shippingQuote === null ? (
+                <div className="rounded-xl border border-[#D8CBBE] bg-[#EFE7DE]/50 px-4 py-4 text-[#63574F]">
+                  Select your state to see the delivery charge. Orders of {formatMoney(shippingSettings.freeShippingThreshold)} and above ship free.
                 </div>
               ) : (
-                <div className="space-y-4 rounded-2xl border border-[#B7A596]/40 bg-white p-4 md:p-6 shadow-xs">
-                  <div className="flex justify-between gap-4">
-                    <span>Orders of ₹{shippingSettings.freeShippingThreshold} and above</span>
-                    <span className="font-bold text-[#8B7768]">FREE</span>
-                  </div>
-                  <div className="flex justify-between gap-4 text-[#63574F]">
-                    <span>Kerala orders below ₹{shippingSettings.freeShippingThreshold}</span>
-                    <span>₹{shippingSettings.keralaShippingCharge}</span>
-                  </div>
-                  <div className="flex justify-between gap-4 text-[#63574F]">
-                    <span>Other states below ₹{shippingSettings.freeShippingThreshold}</span>
-                    <span>₹{shippingSettings.otherStatesShippingCharge}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="rounded-2xl border border-[#8B7768] bg-[#EFE7DE] p-4 md:p-6 shadow-xs">
-                <div className="flex justify-between gap-4 text-base">
-                  <span>
-                    Current delivery charge
-                    <span className="block text-xs text-[#63574F] mt-1">
-                      {hasFreeDeliveryItem
-                        ? 'Free delivery applied for product in cart'
-                        : formData.state
-                          ? `Shipping to ${formData.state}`
-                          : 'Set your state in the contact step to confirm the delivery charge'}
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-[#8B7768] bg-[#EFE7DE]/60 px-4 py-4">
+                  <span className="flex items-center gap-3">
+                    <Truck className="h-5 w-5 shrink-0 text-[#8B7768]" />
+                    <span>
+                      <span className="block font-medium text-[#382F2A]">Standard Delivery</span>
+                      <span className="block text-xs text-[#63574F]">
+                        {hasFreeDeliveryItem
+                          ? 'Free delivery applied for a product in your cart'
+                          : shippingQuote === 0
+                            ? `Free on orders of ${formatMoney(shippingSettings.freeShippingThreshold)} and above`
+                            : `Shipping to ${formData.state}`}
+                      </span>
                     </span>
                   </span>
-                  <span className="font-bold font-sans text-[#382F2A]">
-                    {shippingCost === 0 ? 'FREE' : `₹${shippingCost.toFixed(0)}`}
-                  </span>
+                  <span className="font-semibold text-[#382F2A]">{shippingLabel}</span>
                 </div>
-              </div>
+              )}
+            </section>
 
-              <button 
-                onClick={() => moveToStep('payment')}
-                className="mt-8 hidden w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] py-4 text-xs font-sans font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] transition-all shadow-sm active:scale-[0.98] md:block"
-              >
-                {shippingCtaLabel}
-              </button>
-            </div>
-          )}
-
-          {/* Payment Step */}
-          {step === 'payment' && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 text-sm">
-              <h2 className="mb-4 text-2xl font-heading md:mb-6">Payment</h2>
-              <p className="mb-6 flex items-center gap-2 text-[#63574F] text-xs">
-                <Lock className="w-4 h-4 text-[#8B7768]" /> All transactions are encrypted with 256-bit SSL security.
+            {/* Payment */}
+            <section>
+              <h2 className="mb-1 text-2xl font-heading font-normal text-[#382F2A]">Payment</h2>
+              <p className="mb-4 flex items-center gap-2 text-xs text-[#63574F]">
+                <Lock className="h-3.5 w-3.5 text-[#8B7768]" /> All transactions are secure and encrypted.
               </p>
 
               {isPaymentUnavailable && (
-                <NoticeBanner tone="error">
-                  Online payments are temporarily unavailable. Please try again later.
-                </NoticeBanner>
+                <div className="mb-4">
+                  <NoticeBanner tone="error">
+                    Online payments are temporarily unavailable. Please try again later.
+                  </NoticeBanner>
+                </div>
               )}
-              
-              <div className="rounded-2xl border border-[#B7A596]/40 bg-white p-4 md:p-6 shadow-xs">
-                <div className="flex flex-col items-center justify-center py-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <span className="font-heading text-lg text-[#382F2A]">Razorpay Secure Checkout</span>
-                  </div>
-                  <p className="text-center text-[#63574F] text-xs max-w-sm mx-auto leading-relaxed">
-                    {isPaymentUnavailable
-                      ? 'Checkout is disabled until the payment gateway is available again.'
-                      : 'After clicking "Complete Payment", you will be securely redirected to Razorpay to pay via UPI, Credit/Debit Cards, or Netbanking.'}
-                  </p>
+
+              <div className="overflow-hidden rounded-xl border border-[#8B7768] bg-white">
+                <div className="flex items-center justify-between gap-4 bg-[#EFE7DE]/60 px-4 py-4">
+                  <span className="font-medium text-[#382F2A]">Razorpay Secure</span>
+                  <span className="text-xs text-[#63574F]">UPI · Cards · Netbanking · Wallets</span>
                 </div>
+                <p className="border-t border-[#D8CBBE] px-4 py-4 text-xs leading-relaxed text-[#63574F]">
+                  After clicking &ldquo;Pay now&rdquo;, a secure Razorpay window opens to complete your purchase.
+                </p>
               </div>
 
-              <button 
-                onClick={handleCheckout}
-                disabled={loading || !checkoutConfigLoaded || !paymentsEnabled}
-                className="mt-8 hidden w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] py-4 text-xs font-sans font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 md:block"
+              <button
+                type="submit"
+                disabled={isPayDisabled}
+                className="mt-8 hidden w-full rounded-full bg-[#6D5C50] py-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] shadow-sm transition-all hover:bg-[#58483D] active:scale-[0.98] disabled:opacity-50 lg:block"
               >
-                {paymentCtaLabel}
+                {payButtonLabel}
+              </button>
+
+              <p className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#8B7E76]">
+                <Link href="/refund-policy" className="underline underline-offset-4 hover:text-[#382F2A]">Refund policy</Link>
+                <Link href="/shipping-policy" className="underline underline-offset-4 hover:text-[#382F2A]">Shipping policy</Link>
+                <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-[#382F2A]">Privacy policy</Link>
+                <Link href="/terms-of-service" className="underline underline-offset-4 hover:text-[#382F2A]">Terms of service</Link>
+              </p>
+            </section>
+
+            {/* Sticky pay bar on mobile */}
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#B7A596]/40 bg-[#F7F3ED]/95 p-4 backdrop-blur-md lg:hidden">
+              <button
+                type="submit"
+                disabled={isPayDisabled}
+                className="w-full rounded-full bg-[#6D5C50] px-4 py-3.5 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] shadow-sm transition-all hover:bg-[#58483D] active:scale-[0.98] disabled:opacity-50"
+              >
+                {payButtonLabel}
               </button>
             </div>
-          )}
-        </div>
+          </form>
 
-        {/* Order Summary Lateral */}
-        <div className="sticky top-28 hidden h-max rounded-2xl border border-[#D8CBBE] bg-[#EFE7DE] p-7 lg:block shadow-xs">
-          <h2 className="text-xl font-heading mb-6 border-b border-[#D8CBBE] pb-4 text-[#382F2A]">Order Summary</h2>
-          <div className="space-y-4 max-h-[40vh] overflow-y-auto w-full pr-4 mb-6">
-            {items.map(item => (
-              <div key={`${item.id}-${item.variantId || 'default'}`} className="flex justify-between items-center gap-4 text-xs sm:text-sm font-sans">
-                <div className="flex items-center gap-3">
-                  <span className="w-7 h-7 flex items-center justify-center bg-white border border-[#B7A596]/40 text-xs rounded-full font-semibold">{item.quantity}</span>
-                  <div className="min-w-0">
-                    <span className="line-clamp-1 block font-medium text-[#382F2A]">{item.name}</span>
-                    {item.variantLabel && (
-                      <span className="text-[11px] text-[#63574F] line-clamp-1 block">{item.variantLabel}</span>
-                    )}
-                  </div>
-                </div>
-                <span className="font-semibold text-[#382F2A]">₹{(item.price * item.quantity).toFixed(0)}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="border-t border-[#D8CBBE] pt-5 space-y-3 text-xs sm:text-sm font-sans mb-6">
-            <div className="flex justify-between text-[#63574F]">
-              <span>Subtotal</span>
-              <span className="font-semibold text-[#382F2A]">₹{total.toFixed(0)}</span>
-            </div>
-            
-            {appliedDiscount && (
-              <div className="flex justify-between text-[#2C6E49] font-medium">
-                <span>Discount ({appliedDiscount.code})</span>
-                <span>-₹{appliedDiscount.amount.toFixed(0)}</span>
-              </div>
-            )}
-            
-            <div className="flex justify-between text-[#63574F]">
-              <span>Shipping</span>
-              <span>
-                {hasFreeDeliveryItem
-                  ? 'FREE'
-                  : formData.state
-                    ? shippingCost === 0
-                      ? 'FREE'
-                      : `₹${shippingCost.toFixed(0)}`
-                    : `Enter state to calculate`}
-              </span>
-            </div>
-            
-            {!appliedDiscount && (
-              <button 
-                onClick={() => setCouponModalOpen(true)}
-                className="mt-2 flex items-center gap-1.5 text-xs text-[#8B7768] font-medium underline underline-offset-4 hover:text-[#58483D] transition-colors"
-              >
-                <Tag className="w-3.5 h-3.5" /> Apply Promo Code
-              </button>
-            )}
-          </div>
-          
-          <div className="flex justify-between items-center text-xl font-heading font-normal pt-4 border-t border-[#D8CBBE] text-[#382F2A]">
-            <span>Total</span>
-            <span className="font-sans font-bold text-[#382F2A]">₹{orderTotal.toFixed(0)}</span>
-          </div>
-
-          <div className="mt-6 pt-5 border-t border-[#D8CBBE] space-y-2.5">
-            <div className="flex items-center gap-2 text-xs text-[#63574F]">
-              <Lock className="w-3.5 h-3.5 text-[#8B7768]" />
-              <span>Secure 256-bit SSL Encryption</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
-
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#B7A596]/40 bg-[#F7F3ED]/95 p-4 backdrop-blur-md lg:hidden">
-        <div className="mx-auto max-w-7xl">
-          <button
-            type="button"
-            onClick={handlePrimaryAction}
-            disabled={isPrimaryActionDisabled}
-            className="w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] px-4 py-3.5 text-center text-xs font-sans font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
-          >
-            {primaryActionLabel}
-          </button>
-        </div>
-        <div className="mx-auto mt-2 flex max-w-7xl items-center justify-between px-2 text-xs font-sans">
-          <span className="text-[#63574F]">
-            {step === 'payment' ? 'Amount due' : 'Estimated total'}
-          </span>
-          <span className="font-bold text-base text-[#382F2A]">₹{orderTotal.toFixed(0)}</span>
+          {/* Order summary (desktop) */}
+          <aside className="sticky top-28 hidden h-max rounded-2xl border border-[#D8CBBE] bg-[#EFE7DE] p-7 shadow-xs lg:block">
+            <h2 className="mb-4 border-b border-[#D8CBBE] pb-4 text-xl font-heading text-[#382F2A]">Order Summary</h2>
+            {orderSummary}
+          </aside>
         </div>
       </div>
 
-      <CouponModal 
-        isOpen={isCouponModalOpen} 
-        onClose={() => setCouponModalOpen(false)} 
+      <CouponModal
+        isOpen={isCouponModalOpen}
+        onClose={() => setCouponModalOpen(false)}
         cartTotal={total}
-        onApply={(amount, code) => setAppliedDiscount({ amount, code })}
+        onApply={(_amount, code) => void applyCoupon(code)}
       />
 
       <AddressModal
@@ -1104,7 +1373,7 @@ export default function CheckoutPage() {
         loading={addressSaving}
         error={addressModalError}
       />
-      
+
       <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
     </main>
   );

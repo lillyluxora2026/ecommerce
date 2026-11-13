@@ -7,6 +7,7 @@ import {
   hasRazorpayCredentials,
   upsertPaymentRecord,
 } from '@/lib/server/checkout';
+import { linkCheckoutSessionToOrder } from '@/lib/server/checkout-sessions';
 
 export async function POST(req: Request) {
   try {
@@ -23,7 +24,8 @@ export async function POST(req: Request) {
     }
 
     // Server will recompute pricing/stock and coupon validity
-    const { orderId, grandTotal } = await createPendingOrder(data, items);
+    const { orderId, grandTotal, customerId } = await createPendingOrder(data, items);
+    await linkCheckoutSessionToOrder(data.checkoutToken, orderId, customerId);
     const paymentRequestToken = await ensureOrderPaymentRequestToken(orderId);
     const amountInPaise = Math.round(grandTotal * 100);
 
