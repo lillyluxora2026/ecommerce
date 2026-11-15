@@ -66,17 +66,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-10 lg:gap-12">
           {/* Brand Column */}
           <div className="md:col-span-2 space-y-4">
-            <Link href="/" className="inline-flex items-center gap-2.5 group">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <circle cx="9" cy="9" r="4.5" fill="#8B7768" fillOpacity="0.8" />
-                <circle cx="15" cy="9" r="4.5" fill="#C5A574" fillOpacity="0.8" />
-                <circle cx="9" cy="15" r="4.5" fill="#C5A574" fillOpacity="0.8" />
-                <circle cx="15" cy="15" r="4.5" fill="#8B7768" fillOpacity="0.8" />
-                <circle cx="12" cy="12" r="2" fill="#F7F3ED" />
-              </svg>
-              <span className="font-heading text-2xl font-normal tracking-[0.06em] text-[#382F2A]">
-                Lily Luxora
-              </span>
+            <Link href="/" className="inline-block group">
+              <Image
+                src="/logo.png"
+                alt="Lily Luxora"
+                width={200}
+                height={57}
+                className="h-11 sm:h-12 w-auto object-contain"
+              />
             </Link>
 
             <p className="font-sans text-xs sm:text-sm text-[#63574F] max-w-sm leading-relaxed">

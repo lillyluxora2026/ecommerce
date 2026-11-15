@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { ShoppingBag, Menu, Search, User, Heart, ChevronDown } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useState, useEffect, useSyncExternalStore } from 'react';
@@ -96,21 +97,16 @@ export function Navbar() {
 
               <Link
                 href="/"
-                className="group flex flex-col items-start leading-none transition-transform hover:opacity-90"
+                className="group flex items-center leading-none transition-transform hover:opacity-90"
               >
-                <div className="flex items-center gap-2">
-                  {/* Four-Petal Clover / Floral Monogram */}
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-[#8B7768]">
-                    <circle cx="9" cy="9" r="4.5" fill="#8B7768" fillOpacity="0.8" />
-                    <circle cx="15" cy="9" r="4.5" fill="#C5A574" fillOpacity="0.8" />
-                    <circle cx="9" cy="15" r="4.5" fill="#C5A574" fillOpacity="0.8" />
-                    <circle cx="15" cy="15" r="4.5" fill="#8B7768" fillOpacity="0.8" />
-                    <circle cx="12" cy="12" r="2" fill="#F7F3ED" />
-                  </svg>
-                  <span className="font-heading text-2xl sm:text-3xl font-normal tracking-[0.06em] text-[#382F2A]">
-                    Lily Luxora
-                  </span>
-                </div>
+                <Image
+                  src="/logo.png"
+                  alt="Lily Luxora"
+                  width={240}
+                  height={68}
+                  priority
+                  className="h-10 sm:h-12 w-auto object-contain"
+                />
               </Link>
             </div>
 
@@ -300,7 +296,15 @@ export function Navbar() {
         )}
       >
         <div className="flex items-center justify-between border-b border-[#B7A596]/30 pb-4">
-          <span className="font-heading text-xl text-[#382F2A]">Lily Luxora</span>
+          <Link href="/" onClick={() => setMobileMenuOpen(false)}>
+            <Image
+              src="/logo.png"
+              alt="Lily Luxora"
+              width={160}
+              height={46}
+              className="h-9 w-auto object-contain"
+            />
+          </Link>
           <button
             type="button"
             onClick={() => setMobileMenuOpen(false)}
