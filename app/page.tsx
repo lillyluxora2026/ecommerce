@@ -53,61 +53,61 @@ const CATEGORIES = [
   {
     name: 'Necklaces',
     slug: 'necklaces',
-    image: '/images/placeholders/cat-necklaces.svg',
-  },
-  {
-    name: 'Earrings',
-    slug: 'earrings',
-    image: '/images/placeholders/cat-earrings.svg',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113317.jpg.jpg',
   },
   {
     name: 'Bracelets',
     slug: 'bracelets',
-    image: '/images/placeholders/cat-bracelets.svg',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113451.jpg.jpg',
   },
   {
-    name: 'Rings',
-    slug: 'rings',
-    image: '/images/placeholders/cat-rings.svg',
+    name: 'Earrings',
+    slug: 'earrings',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113218.jpg.jpg',
+  },
+  {
+    name: 'Layering Sets',
+    slug: 'necklaces',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113334.jpg.jpg',
   },
 ];
 
 const BESTSELLERS = [
   {
-    id: 'pearl-clover-necklace',
-    name: 'Pearl Clover Necklace',
-    slug: 'pearl-clover-necklace',
-    price: 1299,
+    id: 'solstice-sunburst-pearl',
+    name: 'Solstice Sunburst Pearl Pendant',
+    slug: 'solstice-sunburst-pearl-medallion-necklace',
+    price: 1899,
     rating: 4.9,
-    reviews: 128,
-    image: '/images/placeholders/prod-pearl-clover.svg',
+    reviews: 28,
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113317.jpg.jpg',
   },
   {
-    id: 'twisted-hoop-earrings',
-    name: 'Twisted Hoop Earrings',
-    slug: 'twisted-hoop-earrings',
-    price: 899,
+    id: 'lumiere-gemstone-cuff',
+    name: 'Lumière Dual-Band Gemstone Cuff',
+    slug: 'lumiere-dual-band-gemstone-gold-cuff',
+    price: 2499,
+    rating: 5.0,
+    reviews: 42,
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113451.jpg.jpg',
+  },
+  {
+    id: 'pave-cherry-charm',
+    name: 'Pavé Crystal Cherry Charm Pendant',
+    slug: 'pave-crystal-cherry-charm-pendant-necklace',
+    price: 1699,
     rating: 4.8,
-    reviews: 96,
-    image: '/images/placeholders/prod-twisted-hoops.svg',
+    reviews: 19,
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113317.jpg.jpg',
   },
   {
-    id: 'ocean-charm-bracelet',
-    name: 'Ocean Charm Bracelet',
-    slug: 'ocean-charm-bracelet',
-    price: 1499,
-    rating: 4.9,
-    reviews: 72,
-    image: '/images/placeholders/prod-ocean-charm.svg',
-  },
-  {
-    id: 'dual-band-crystal-ring',
-    name: 'Dual Band Crystal Ring',
-    slug: 'dual-band-crystal-ring',
-    price: 999,
-    rating: 4.8,
-    reviews: 64,
-    image: '/images/placeholders/prod-dual-band.svg',
+    id: 'elysian-roman-coin',
+    name: 'Elysian Roman Coin & Pearl Set',
+    slug: 'elysian-roman-coin-pearl-layering-set',
+    price: 2299,
+    rating: 5.0,
+    reviews: 36,
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113218.jpg.jpg',
   },
 ];
 
@@ -214,8 +214,8 @@ export default function Home() {
             <div className="lg:col-span-6">
               <div className="relative aspect-[14/9] w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[#D8CBBE] bg-[#EFE7DE] shadow-sm">
                 <Image
-                  src="/images/placeholders/hero-editorial.svg"
-                  alt="Lily Luxora — Hero Campaign Placeholder"
+                  src="https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113218.jpg.jpg"
+                  alt="Lily Luxora — Demi-Fine Gold Jewellery"
                   fill
                   priority
                   className="object-cover object-center"

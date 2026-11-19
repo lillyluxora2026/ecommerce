@@ -68,7 +68,7 @@ export function Footer() {
           <div className="md:col-span-2 space-y-4">
             <Link href="/" className="inline-block group">
               <Image
-                src="/logo.png"
+                src="/logo-v2.png"
                 alt="Lily Luxora"
                 width={200}
                 height={57}

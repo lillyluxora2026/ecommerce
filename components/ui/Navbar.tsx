@@ -100,7 +100,7 @@ export function Navbar() {
                 className="group flex items-center leading-none transition-transform hover:opacity-90"
               >
                 <Image
-                  src="/logo.png"
+                  src="/logo-v2.png"
                   alt="Lily Luxora"
                   width={240}
                   height={68}
@@ -298,7 +298,7 @@ export function Navbar() {
         <div className="flex items-center justify-between border-b border-[#B7A596]/30 pb-4">
           <Link href="/" onClick={() => setMobileMenuOpen(false)}>
             <Image
-              src="/logo.png"
+              src="/logo-v2.png"
               alt="Lily Luxora"
               width={160}
               height={46}

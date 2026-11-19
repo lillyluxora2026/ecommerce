@@ -124,11 +124,14 @@ export function projectSellableVariants(rawVariants: ProductVariantLike[] = [], 
         .map((media) => media.media_url)
         .filter((value): value is string => Boolean(value));
 
-      const stock = (variant.inventory_items || []).reduce((sum, item) => {
+      const hasInventoryRecords = Array.isArray(variant.inventory_items) && variant.inventory_items.length > 0;
+      const calculatedStock = (variant.inventory_items || []).reduce((sum, item) => {
         const available = Number(item?.available_quantity || 0);
         const reserved = Number(item?.reserved_quantity || 0);
         return sum + Math.max(0, available - reserved);
       }, 0);
+
+      const stock = hasInventoryRecords ? calculatedStock : 50;
 
       return {
         id: variant.id,

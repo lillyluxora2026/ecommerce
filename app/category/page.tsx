@@ -12,25 +12,25 @@ const FEATURED_CATEGORIES = [
     name: 'Necklaces',
     slug: 'necklaces',
     description: 'Delicate clover pendants, timeless chains, and layered statement necklaces in 18K PVD gold.',
-    image: '/images/placeholders/cat-necklaces.svg',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113317.jpg.jpg',
   },
   {
     name: 'Earrings',
     slug: 'earrings',
     description: 'Chunky huggies, twisted gold hoops, and sparkling studs designed for everyday comfort.',
-    image: '/images/placeholders/cat-earrings.svg',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113218.jpg.jpg',
   },
   {
     name: 'Bracelets',
     slug: 'bracelets',
     description: 'Waterproof charm chains, sculpted bangles, and dainty wrist stacks made to never tarnish.',
-    image: '/images/placeholders/cat-bracelets.svg',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113451.jpg.jpg',
   },
   {
-    name: 'Rings',
-    slug: 'rings',
-    description: 'Pavé crystal bands, minimal gold bands, and stackable statement rings in skin-friendly steel.',
-    image: '/images/placeholders/cat-rings.svg',
+    name: 'Layering Sets',
+    slug: 'necklaces',
+    description: 'Artisan paperclip chains, sunburst coins, and curated everyday stacks.',
+    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113334.jpg.jpg',
   },
 ];
 
