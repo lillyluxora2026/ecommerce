@@ -7,7 +7,7 @@ export function AnalyticsPreferencesButton() {
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event(OPEN_PREFERENCES_EVENT))}
-      className="hover:text-[#382F2A] transition-colors"
+      className="hover:text-[#121212] transition-colors"
     >
       Cookie Preferences
     </button>

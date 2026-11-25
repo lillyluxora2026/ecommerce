@@ -9,24 +9,29 @@ import {
   Gem,
   ArrowRight,
   Star,
-  Heart,
-  ShoppingCart,
 } from 'lucide-react';
 import { DEFAULT_SITE_URL, getSiteUrl } from '@/lib/server/site-url';
+import { getHomeBannerSettings } from '@/lib/server/app-settings';
+import { getCategories } from '@/lib/api/home';
+import { getProducts } from '@/lib/api/product';
+import { HomeHeroCarousel } from '@/components/home/HomeHeroCarousel';
+import { ProductCard } from '@/components/product/ProductCard';
+
+export const dynamic = 'force-dynamic';
 
 const SITE_URL = getSiteUrl() || DEFAULT_SITE_URL;
 
 export const metadata: Metadata = {
   title: {
-    absolute: 'Lily Luxora — Everyday Elegance, Made to Last',
+    absolute: 'Lily Luxora — Everyday Demi-Fine Jewellery',
   },
   description:
-    '18K PVD Gold-Plated, Stainless Steel, Waterproof & Anti-Tarnish Demi-Fine Jewellery. Necklaces, earrings, bracelets and rings crafted for everyday luxury.',
+    '18K PVD Gold-Plated, Stainless Steel, Waterproof & Anti-Tarnish Demi-Fine Jewellery. Necklaces, earrings, bracelets and cuffs crafted for everyday wear.',
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Lily Luxora — Everyday Elegance, Made to Last',
+    title: 'Lily Luxora — Everyday Demi-Fine Jewellery',
     description:
       '18K PVD Gold-Plated, Stainless Steel, Waterproof & Anti-Tarnish Jewellery.',
     url: '/',
@@ -38,7 +43,7 @@ const organizationJsonLd = {
   '@type': 'Organization',
   name: 'Lily Luxora',
   url: SITE_URL,
-  logo: `${SITE_URL}/logo.svg`,
+  logo: `${SITE_URL}/logo-v2.png`,
   sameAs: ['https://www.instagram.com/lilyluxora'],
   contactPoint: [
     {
@@ -49,126 +54,54 @@ const organizationJsonLd = {
   ],
 };
 
-const CATEGORIES = [
-  {
-    name: 'Necklaces',
-    slug: 'necklaces',
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113317.jpg.jpg',
-  },
-  {
-    name: 'Bracelets',
-    slug: 'bracelets',
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113451.jpg.jpg',
-  },
-  {
-    name: 'Earrings',
-    slug: 'earrings',
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113218.jpg.jpg',
-  },
-  {
-    name: 'Layering Sets',
-    slug: 'necklaces',
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113334.jpg.jpg',
-  },
-];
-
-const BESTSELLERS = [
-  {
-    id: 'solstice-sunburst-pearl',
-    name: 'Solstice Sunburst Pearl Pendant',
-    slug: 'solstice-sunburst-pearl-medallion-necklace',
-    price: 1899,
-    rating: 4.9,
-    reviews: 28,
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113317.jpg.jpg',
-  },
-  {
-    id: 'lumiere-gemstone-cuff',
-    name: 'Lumière Dual-Band Gemstone Cuff',
-    slug: 'lumiere-dual-band-gemstone-gold-cuff',
-    price: 2499,
-    rating: 5.0,
-    reviews: 42,
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113451.jpg.jpg',
-  },
-  {
-    id: 'pave-cherry-charm',
-    name: 'Pavé Crystal Cherry Charm Pendant',
-    slug: 'pave-crystal-cherry-charm-pendant-necklace',
-    price: 1699,
-    rating: 4.8,
-    reviews: 19,
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113317.jpg.jpg',
-  },
-  {
-    id: 'elysian-roman-coin',
-    name: 'Elysian Roman Coin & Pearl Set',
-    slug: 'elysian-roman-coin-pearl-layering-set',
-    price: 2299,
-    rating: 5.0,
-    reviews: 36,
-    image: 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113218.jpg.jpg',
-  },
-];
-
 const REVIEWS = [
   {
     id: 1,
     name: 'Anjali S.',
-    avatar: '/images/placeholders/avatar-anjali.svg',
-    quote: 'The quality is amazing! Totally waterproof and still looks brand new.',
+    quote: 'Zero tarnish even after wearing it daily in the shower. The gold tone looks genuinely fine.',
   },
   {
     id: 2,
     name: 'Meera K.',
-    avatar: '/images/placeholders/avatar-meera.svg',
-    quote: 'Elegant, lightweight and perfect for everyday wear. Highly recommend!',
+    quote: 'Lightweight, super clean finish, and pairs effortlessly with both office and evening looks.',
   },
   {
     id: 3,
     name: 'Riya P.',
-    avatar: '/images/placeholders/avatar-riya.svg',
-    quote: 'Beautiful collection and super fast delivery. Lily Luxora is now my go-to!',
+    quote: 'Fast Pan-India shipping and thoughtful packaging. My favourite everyday jewellery stop.',
   },
 ];
 
-const INSTAGRAM_POSTS = [
-  { id: 1, image: '/images/placeholders/ig-1.svg' },
-  { id: 2, image: '/images/placeholders/ig-2.svg' },
-  { id: 3, image: '/images/placeholders/ig-3.svg' },
-  { id: 4, image: '/images/placeholders/ig-4.svg' },
-  { id: 5, image: '/images/placeholders/ig-5.svg' },
-  { id: 6, image: '/images/placeholders/ig-6.svg' },
-];
+export default async function Home() {
+  const [bannerSettings, categories, products] = await Promise.all([
+    getHomeBannerSettings(),
+    getCategories(),
+    getProducts(),
+  ]);
 
-function SectionHeader({
-  title,
-  rightAction,
-}: {
-  title: string;
-  rightAction?: React.ReactNode;
-}) {
-  return (
-    <div className="relative flex items-center justify-center my-4 sm:my-5">
-      <div className="flex items-center gap-3 sm:gap-4 text-center">
-        {/* Left tapered line flourish */}
-        <span className="h-[1px] w-14 sm:w-24 bg-gradient-to-r from-transparent via-[#B7A596] to-[#B7A596]" />
-        <h2 className="font-heading text-2xl sm:text-[28px] lg:text-[30px] font-normal text-[#382F2A] italic tracking-[0.02em]">
-          {title}
-        </h2>
-        {/* Right tapered line flourish */}
-        <span className="h-[1px] w-14 sm:w-24 bg-gradient-to-l from-transparent via-[#B7A596] to-[#B7A596]" />
-      </div>
-      {rightAction && (
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
-          {rightAction}
-        </div>
-      )}
-    </div>
-  );
-}
+  // Build "Shop by Collection" 4-card grid matching clean Dawn layout
+  const topCategories = categories.slice(0, 3);
+  const collectionCards = [
+    {
+      name: 'Under Rs. 1,799',
+      href: '/products?maxPrice=1799',
+      image:
+        'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113334.jpg.jpg',
+    },
+    ...topCategories.map((cat) => ({
+      name: cat.name,
+      href: `/category/${cat.slug}`,
+      image: cat.image,
+    })),
+  ].slice(0, 4);
 
-export default function Home() {
+  const featuredProducts = products.slice(0, 8);
+  const storyImage =
+    bannerSettings.promiseImageUrl &&
+    !bannerSettings.promiseImageUrl.endsWith('.svg')
+      ? bannerSettings.promiseImageUrl
+      : 'https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113451.jpg.jpg';
+
   return (
     <>
       <Script
@@ -177,315 +110,197 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
 
-      <main className="w-full bg-[#F7F3ED] text-[#382F2A] overflow-hidden">
-        {/* ─── 1. HERO SECTION (EDITORIAL SPLIT + PLACEHOLDER) ──────────────── */}
-        <section className="relative w-full bg-gradient-to-r from-[#EFE6DC] via-[#F4EDE4] to-[#E6DACD] border-b border-[#D8CBBE]/60 overflow-hidden">
-          <div className="max-w-[1320px] mx-auto grid grid-cols-1 lg:grid-cols-12 items-center gap-6 lg:gap-8 px-4 sm:px-6 lg:px-10 py-10 sm:py-14 lg:py-16">
-            <div className="lg:col-span-6 flex flex-col items-start text-left space-y-4 sm:space-y-5 z-10">
-              <span className="text-[11px] sm:text-xs font-sans font-semibold uppercase tracking-[0.26em] text-[#8B7768]">
-                Demi-Fine Jewellery
-              </span>
-              <h1 className="font-heading text-4xl sm:text-5xl lg:text-[54px] font-normal italic leading-[1.08] tracking-tight text-[#382F2A]">
-                Everyday Elegance,
-                <br />
-                Made to Last
-              </h1>
-              <p className="font-sans text-xs sm:text-sm text-[#63574F] leading-relaxed max-w-md">
-                18K PVD Gold-Plated &bull; Stainless Steel
-                <br />
-                Waterproof &amp; Anti-Tarnish Jewellery
-              </p>
-              <div className="pt-2">
-                <Link
-                  href="/products"
-                  className="inline-flex items-center gap-2.5 rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-7 py-3 text-xs sm:text-sm font-sans font-medium tracking-wide transition-all shadow-sm hover:-translate-y-0.5"
-                >
-                  <span>Shop the Collection</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-              <div className="flex items-center gap-2 pt-3" aria-hidden="true">
-                <span className="w-5 h-1.5 rounded-full bg-[#6D5C50]" />
-                <span className="w-1.5 h-1.5 rounded-full bg-[#B7A596]/70" />
-                <span className="w-1.5 h-1.5 rounded-full bg-[#B7A596]/70" />
-              </div>
-            </div>
+      <main className="w-full bg-white text-[#121212] overflow-x-clip">
+        {/* ─── 1. HERO BANNER ───────────────────────────────────────── */}
+        <HomeHeroCarousel slides={bannerSettings.slides} />
 
-            <div className="lg:col-span-6">
-              <div className="relative aspect-[14/9] w-full rounded-2xl sm:rounded-3xl overflow-hidden border border-[#D8CBBE] bg-[#EFE7DE] shadow-sm">
-                <Image
-                  src="https://res.cloudinary.com/zivp4yyq/image/upload/f_auto/q_auto/IMG_20261118_113218.jpg.jpg"
-                  alt="Lily Luxora — Demi-Fine Gold Jewellery"
-                  fill
-                  priority
-                  className="object-cover object-center"
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                />
-              </div>
-            </div>
+        {/* ─── 2. SHOP BY COLLECTION (2-COL MOBILE / 4-COL DESKTOP) ─── */}
+        <section className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 pt-8 sm:pt-12 pb-4 sm:pb-6">
+          <div className="flex items-baseline justify-between mb-4 sm:mb-6">
+            <h2 className="font-sans text-[22px] sm:text-[26px] font-normal tracking-[-0.01em] text-[#121212]">
+              Shop by Collection
+            </h2>
+            <Link
+              href="/category"
+              className="text-[13px] font-sans text-[#555555] hover:text-[#121212] underline underline-offset-4 transition-colors"
+            >
+              View all
+            </Link>
           </div>
-        </section>
 
-        {/* ─── 2. SHOP BY CATEGORY ───────────────────────────────────── */}
-        <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-2">
-          <SectionHeader title="Shop by Category" />
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 mt-4">
-            {CATEGORIES.map((cat) => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-2.5 gap-y-6 sm:gap-x-5 sm:gap-y-8">
+            {collectionCards.map((item) => (
               <Link
-                key={cat.name}
-                href={`/category/${cat.slug}`}
-                className="group flex flex-col items-center gap-2 transition-transform duration-300 hover:-translate-y-1"
+                key={item.name}
+                href={item.href}
+                className="group flex flex-col min-w-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#121212]"
               >
-                <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-[#EAE1D7] border border-[#E0D4C6] shadow-sm">
-                  <Image
-                    src={cat.image}
-                    alt={cat.name}
-                    fill
-                    className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-106"
-                    sizes="(max-width: 640px) 50vw, 25vw"
-                  />
-                </div>
-                <div className="flex items-center gap-1.5 font-heading text-base sm:text-[17px] text-[#382F2A] group-hover:text-[#8B7768] transition-colors mt-1">
-                  <span>{cat.name}</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
-
-        {/* ─── 3. BRAND BENEFITS STRIP ───────────────────────────────── */}
-        <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="rounded-2xl bg-[#EFE7DE] border border-[#D8CBBE] px-6 py-4 shadow-sm grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <div className="flex items-center gap-3.5">
-              <Droplets className="w-6 h-6 text-[#8B7768] stroke-[1.6] shrink-0" />
-              <div className="flex flex-col">
-                <span className="font-sans text-xs sm:text-[13px] font-semibold text-[#382F2A]">
-                  Waterproof
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-[#63574F]">
-                  Wear it every day
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3.5">
-              <Shield className="w-6 h-6 text-[#8B7768] stroke-[1.6] shrink-0" />
-              <div className="flex flex-col">
-                <span className="font-sans text-xs sm:text-[13px] font-semibold text-[#382F2A]">
-                  Anti-Tarnish
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-[#63574F]">
-                  Long-lasting shine
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3.5">
-              <Sparkles className="w-6 h-6 text-[#8B7768] stroke-[1.6] shrink-0" />
-              <div className="flex flex-col">
-                <span className="font-sans text-xs sm:text-[13px] font-semibold text-[#382F2A]">
-                  18K PVD Gold-Plated
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-[#63574F]">
-                  Premium &amp; durable finish
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3.5">
-              <Gem className="w-6 h-6 text-[#8B7768] stroke-[1.6] shrink-0" />
-              <div className="flex flex-col">
-                <span className="font-sans text-xs sm:text-[13px] font-semibold text-[#382F2A]">
-                  Stainless Steel
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-[#63574F]">
-                  Skin-friendly &amp; durable
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── 4. BESTSELLERS ────────────────────────────────────────── */}
-        <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-2">
-          <SectionHeader
-            title="Bestsellers"
-            rightAction={
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-1 text-xs font-sans font-medium text-[#382F2A] hover:text-[#8B7768] transition-colors underline underline-offset-4"
-              >
-                <span>View All</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            }
-          />
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5 mt-4">
-            {BESTSELLERS.map((item) => (
-              <div
-                key={item.id}
-                className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-[#E5DACF] shadow-sm hover:border-[#8B7768]/60 transition-all p-3"
-              >
-                <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-[#F7F3ED]">
+                <div className="relative aspect-square w-full overflow-hidden bg-[#F6F6F6]">
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
-                    className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
                     sizes="(max-width: 640px) 50vw, 25vw"
                   />
-                  <button
-                    type="button"
-                    aria-label="Add to Wishlist"
-                    className="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/95 text-[#382F2A] border border-[#B7A596]/30 shadow-xs transition-transform hover:scale-110 hover:text-[#8B7768]"
-                  >
-                    <Heart className="w-3.5 h-3.5" />
-                  </button>
                 </div>
-
-                <div className="pt-2.5 pb-0.5 flex flex-col gap-1 flex-1 justify-between">
-                  <div>
-                    <h3 className="font-sans text-xs sm:text-[13px] font-semibold text-[#382F2A] line-clamp-1">
-                      {item.name}
-                    </h3>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="font-sans text-sm sm:text-base font-bold text-[#382F2A]">
-                        ₹{item.price.toLocaleString('en-IN')}
-                      </span>
-                      <div className="flex items-center gap-1 text-[11px] font-sans text-[#63574F]">
-                        <Star className="w-3 h-3 text-[#C5A574] fill-[#C5A574]" />
-                        <span className="font-medium text-[#382F2A]">{item.rating}</span>
-                        <span className="text-[#8B7E76]">({item.reviews})</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Link
-                    href={`/product/${item.slug}`}
-                    className="mt-2.5 w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] py-2 px-3 text-[11px] font-sans font-medium tracking-wide flex items-center justify-center gap-2 transition-all shadow-sm"
-                  >
-                    <ShoppingCart className="w-3 h-3" />
-                    <span>Add to Cart</span>
-                  </Link>
+                <div className="mt-2.5 flex items-center gap-1.5 font-sans text-[14px] sm:text-[15px] font-normal text-[#121212]">
+                  <span>{item.name}</span>
+                  <ArrowRight
+                    className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1"
+                    strokeWidth={1.5}
+                  />
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
 
-        {/* ─── 5. NEW ARRIVALS CAMPAIGN BANNER ────────────────────────── */}
-        <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
-          <div className="grid grid-cols-1 md:grid-cols-12 items-center rounded-2xl sm:rounded-3xl overflow-hidden bg-[#EFE6DC] border border-[#E0D4C6] shadow-sm">
-            <div className="md:col-span-7 relative aspect-[2/1] w-full h-full min-h-[200px]">
+        {/* ─── 3. FEATURED PRODUCTS GRID (MINIMALIST SQUARE CARDS) ─── */}
+        <section className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 pt-8 sm:pt-12 pb-6 sm:pb-10">
+          <div className="flex items-baseline justify-between mb-4 sm:mb-6">
+            <h2 className="font-sans text-[22px] sm:text-[26px] font-normal tracking-[-0.01em] text-[#121212]">
+              Featured Collection
+            </h2>
+            <Link
+              href="/products"
+              className="text-[13px] font-sans text-[#555555] hover:text-[#121212] underline underline-offset-4 transition-colors"
+            >
+              View all
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 sm:gap-x-5 sm:gap-y-9">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          <div className="mt-10 flex justify-center">
+            <Link
+              href="/products"
+              className="inline-flex items-center justify-center bg-[#121212] hover:bg-[#2C2C2C] text-white px-8 py-3 text-[13px] font-sans font-medium tracking-wide transition-colors"
+            >
+              View all products
+            </Link>
+          </div>
+        </section>
+
+        {/* ─── 4. BRAND PROMISE STRIP ───────────────────────────────── */}
+        <section className="border-y border-[#EBEBEB] bg-[#F8F8F8] py-8 sm:py-10">
+          <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="flex items-start gap-3">
+              <Droplets className="w-5 h-5 text-[#121212] shrink-0 mt-0.5" strokeWidth={1.4} />
+              <div>
+                <h3 className="font-sans text-[13px] sm:text-sm font-medium text-[#121212]">
+                  Waterproof
+                </h3>
+                <p className="text-xs text-[#555555] mt-0.5">
+                  Safe in showers &amp; everyday wear
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Shield className="w-5 h-5 text-[#121212] shrink-0 mt-0.5" strokeWidth={1.4} />
+              <div>
+                <h3 className="font-sans text-[13px] sm:text-sm font-medium text-[#121212]">
+                  Anti-Tarnish
+                </h3>
+                <p className="text-xs text-[#555555] mt-0.5">
+                  Long-lasting lustre guaranteed
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-5 h-5 text-[#121212] shrink-0 mt-0.5" strokeWidth={1.4} />
+              <div>
+                <h3 className="font-sans text-[13px] sm:text-sm font-medium text-[#121212]">
+                  18K PVD Gold-Plated
+                </h3>
+                <p className="text-xs text-[#555555] mt-0.5">
+                  Vacuum-bonded radiant finish
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <Gem className="w-5 h-5 text-[#121212] shrink-0 mt-0.5" strokeWidth={1.4} />
+              <div>
+                <h3 className="font-sans text-[13px] sm:text-sm font-medium text-[#121212]">
+                  Hypoallergenic Steel
+                </h3>
+                <p className="text-xs text-[#555555] mt-0.5">
+                  Nickel-free surgical 316L base
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ─── 5. EDITORIAL PROMISE SPLIT ───────────────────────────── */}
+        <section className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 py-10 sm:py-16">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 sm:gap-10 items-center">
+            <div className="md:col-span-6 relative aspect-square sm:aspect-[5/4] w-full overflow-hidden bg-[#F6F6F6]">
               <Image
-                src="/images/placeholders/new-arrivals-banner.svg"
-                alt="New Arrivals — The Latest in Timeless Shine"
+                src={storyImage}
+                alt={bannerSettings.promiseTitle}
                 fill
                 className="object-cover object-center"
-                sizes="(max-width: 768px) 100vw, 58vw"
+                sizes="(max-width: 768px) 100vw, 50vw"
               />
             </div>
 
-            <div className="md:col-span-5 flex flex-col items-start justify-center p-6 sm:p-8 lg:p-10 space-y-3">
-              <span className="text-[10px] sm:text-[11px] font-sans font-semibold uppercase tracking-[0.22em] text-[#8B7768]">
-                New Arrivals
+            <div className="md:col-span-6 space-y-4 md:pl-4">
+              <span className="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-[#555555] block">
+                {bannerSettings.promiseKickerText}
               </span>
-              <h2 className="font-heading text-2xl sm:text-3xl font-normal italic leading-tight text-[#382F2A]">
-                The Latest in
-                <br />
-                Timeless Shine
+              <h2 className="font-sans text-2xl sm:text-3xl lg:text-4xl font-normal tracking-tight text-[#121212]">
+                {bannerSettings.promiseTitle}
               </h2>
-              <p className="font-sans text-xs sm:text-sm text-[#63574F]">
-                Fresh pieces for your every mood.
+              <p className="font-sans text-sm text-[#555555] leading-relaxed max-w-lg">
+                {bannerSettings.promiseDescription}
               </p>
-              <div className="pt-1">
+              <div className="pt-2">
                 <Link
-                  href="/products?sort=new"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-6 py-2.5 text-xs font-sans font-medium tracking-wide transition-all shadow-sm"
+                  href="/about"
+                  className="inline-flex items-center gap-2 border border-[#121212] bg-white hover:bg-[#121212] hover:text-white text-[#121212] px-6 py-3 text-[13px] font-sans font-medium transition-colors"
                 >
-                  <span>Shop New Arrivals</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Read our story</span>
+                  <ArrowRight className="w-3.5 h-3.5" strokeWidth={1.5} />
                 </Link>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ─── 6. CUSTOMER REVIEWS (LOVED BY OUR CUSTOMERS) ───────────── */}
-        <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4">
-          <SectionHeader title="Loved by Our Customers" />
+        {/* ─── 6. CUSTOMER NOTES ────────────────────────────────────── */}
+        <section className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 pb-8 sm:pb-12">
+          <h2 className="font-sans text-[22px] sm:text-[26px] font-normal tracking-[-0.01em] text-[#121212] mb-5">
+            Loved by Our Customers
+          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-5 mt-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
             {REVIEWS.map((rev) => (
               <div
                 key={rev.id}
-                className="flex items-center gap-3.5 rounded-2xl bg-[#F9F6F0] border border-[#E5DACF] p-4 sm:p-5 shadow-xs"
+                className="border border-[#EBEBEB] bg-[#FAFAFA] p-5 sm:p-6 flex flex-col justify-between gap-4"
               >
-                <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden border border-[#B7A596]/40 shrink-0 bg-[#E0D4C6]">
-                  <Image
-                    src={rev.avatar}
-                    alt={rev.name}
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-0.5 min-w-0">
-                  <div className="flex items-center gap-0.5 text-[#C5A574]">
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-0.5 text-[#121212]" aria-label="5 out of 5 stars">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className="w-2.5 h-2.5 fill-current" />
+                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
                     ))}
                   </div>
-                  <p className="font-sans text-[11px] sm:text-xs text-[#382F2A] italic leading-snug line-clamp-2">
+                  <p className="font-sans text-[13px] sm:text-sm text-[#121212] leading-relaxed">
                     &ldquo;{rev.quote}&rdquo;
                   </p>
-                  <span className="font-sans text-[10px] font-medium text-[#8B7768]">
-                    — {rev.name}
-                  </span>
                 </div>
+                <span className="font-sans text-xs font-medium text-[#555555]">
+                  — {rev.name}
+                </span>
               </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ─── 7. INSTAGRAM GALLERY (AS SEEN ON INSTAGRAM) ─────────────── */}
-        <section className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-12">
-          <SectionHeader
-            title="As Seen on Instagram"
-            rightAction={
-              <a
-                href="https://www.instagram.com/lilyluxora/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-sans font-medium text-[#382F2A] hover:text-[#8B7768] transition-colors underline underline-offset-4"
-              >
-                <span>@lilyluxora</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </a>
-            }
-          />
-
-          <div className="grid grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3.5 mt-4">
-            {INSTAGRAM_POSTS.map((item) => (
-              <a
-                key={item.id}
-                href="https://www.instagram.com/lilyluxora/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative aspect-square rounded-2xl overflow-hidden bg-[#EBE2D8] border border-[#E0D4C6] shadow-xs block transition-transform duration-300 hover:-translate-y-1"
-              >
-                <Image
-                  src={item.image}
-                  alt={`Lily Luxora Instagram post ${item.id}`}
-                  fill
-                  className="object-cover object-center transition-transform duration-500 group-hover:scale-106"
-                  sizes="(max-width: 640px) 33vw, 16vw"
-                />
-              </a>
             ))}
           </div>
         </section>

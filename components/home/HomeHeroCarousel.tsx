@@ -26,97 +26,119 @@ export function HomeHeroCarousel({ slides }: HomeHeroCarouselProps) {
   const activeSlide = slides[activeIndex] || slides[0];
 
   return (
-    <section className="relative h-[85vh] min-h-[600px] w-full overflow-hidden bg-[#D8CBBE]">
-      {slides.map((slide, index) => (
-        <div
-          key={slide.id}
-          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-            index === activeIndex ? 'opacity-100' : 'pointer-events-none opacity-0'
-          }`}
-        >
-          <Image
-            src={slide.imageUrl}
-            alt={slide.title}
-            fill
-            priority={index === 0}
-            className="hidden object-cover object-center md:block"
-            sizes="100vw"
-          />
-          <Image
-            src={slide.mobileImageUrl || slide.imageUrl}
-            alt={slide.title}
-            fill
-            priority={index === 0}
-            className="object-cover object-center md:hidden"
-            sizes="100vw"
-          />
-        </div>
-      ))}
+    <section className="relative w-full aspect-[4/5] sm:aspect-[16/9] lg:aspect-[21/9] max-h-[680px] min-h-[420px] overflow-hidden bg-[#F3F3F3]">
+      {slides.map((slide, index) => {
+        const isFirst = index === 0;
+        const hasDistinctMobileImage =
+          Boolean(slide.mobileImageUrl) && slide.mobileImageUrl !== slide.imageUrl;
 
-      {/* Subtle warm luxury vignette overlay */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#382F2A]/85 via-[#382F2A]/30 to-[#382F2A]/20" />
+        return (
+          <div
+            key={slide.id}
+            className={`absolute inset-0 transition-opacity duration-700 ease-in-out ${
+              index === activeIndex ? 'opacity-100' : 'pointer-events-none opacity-0'
+            }`}
+          >
+            {hasDistinctMobileImage ? (
+              <>
+                <Image
+                  src={slide.imageUrl}
+                  alt={slide.title}
+                  fill
+                  priority={isFirst}
+                  fetchPriority={isFirst ? 'high' : 'low'}
+                  loading={isFirst ? undefined : 'lazy'}
+                  className="hidden object-cover object-center md:block"
+                  sizes="(min-width: 768px) 100vw, 1px"
+                />
+                <Image
+                  src={slide.mobileImageUrl}
+                  alt={slide.title}
+                  fill
+                  priority={isFirst}
+                  fetchPriority={isFirst ? 'high' : 'low'}
+                  loading={isFirst ? undefined : 'lazy'}
+                  className="object-cover object-center md:hidden"
+                  sizes="(max-width: 767px) 100vw, 1px"
+                />
+              </>
+            ) : (
+              <Image
+                src={slide.imageUrl}
+                alt={slide.title}
+                fill
+                priority={isFirst}
+                fetchPriority={isFirst ? 'high' : 'low'}
+                loading={isFirst ? undefined : 'lazy'}
+                className="object-cover object-center"
+                sizes="100vw"
+              />
+            )}
+          </div>
+        );
+      })}
 
-      {/* Hero Content */}
-      <div className="absolute inset-x-0 bottom-0 z-20 mx-auto flex w-full max-w-7xl flex-col gap-5 p-6 sm:p-10 md:p-16 lg:p-20">
-        <div className="flex items-center gap-2">
-          <span className="inline-block h-[1px] w-8 bg-[#C5A574]" />
-          <span className="text-[11px] sm:text-xs font-sans font-semibold uppercase tracking-[0.3em] text-[#C5A574]">
-            {activeSlide.badgeText}
-          </span>
-        </div>
+      {/* Clean contrast scrim along bottom edge for crisp white type */}
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/65 via-black/20 to-transparent" />
 
-        <h1 className="font-heading text-4xl sm:text-6xl md:text-7xl font-light leading-[1.08] tracking-tight text-[#F7F3ED] max-w-3xl">
+      {/* Minimalist Dawn Hero Content */}
+      <div className="absolute inset-x-0 bottom-0 z-20 mx-auto flex w-full max-w-7xl flex-col gap-3 px-4 pb-8 sm:px-6 sm:pb-12 lg:px-10 lg:pb-16">
+        <span className="text-[11px] font-sans font-medium uppercase tracking-[0.2em] text-white/90">
+          {activeSlide.badgeText}
+        </span>
+
+        <h1 className="font-sans text-3xl sm:text-5xl lg:text-[54px] font-normal leading-[1.1] tracking-tight text-white max-w-2xl">
           {activeSlide.title}{' '}
           {activeSlide.highlightText && (
-            <span className="font-normal italic text-[#C5A574]">
+            <span className="block sm:inline text-white/95">
               {activeSlide.highlightText}
             </span>
           )}
         </h1>
 
-        <p className="max-w-xl text-sm sm:text-base font-sans leading-relaxed text-[#F7F3ED]/90 font-light">
+        <p className="max-w-lg text-xs sm:text-sm font-sans leading-relaxed text-white/85 font-normal line-clamp-2 sm:line-clamp-none">
           {activeSlide.description}
         </p>
 
-        <div className="pt-2 flex flex-wrap items-center gap-4">
+        <div className="pt-2 flex flex-wrap items-center gap-3">
           <Link
-            href={activeSlide.ctaHref}
-            className="group inline-flex items-center justify-center gap-3 bg-[#8B7768] hover:bg-[#735F51] text-[#F7F3ED] px-8 py-4 text-xs font-sans font-semibold uppercase tracking-[0.2em] transition-all shadow-[0_8px_24px_rgba(56,47,42,0.2)]"
+            href={activeSlide.ctaHref || '/products'}
+            className="group inline-flex items-center justify-center gap-2 bg-white text-[#121212] hover:bg-[#F5F5F5] px-6 py-3 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors"
           >
-            <span>{activeSlide.ctaLabel}</span>
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <span>{activeSlide.ctaLabel || 'Shop now'}</span>
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" strokeWidth={1.5} />
           </Link>
           <Link
-            href="/category"
-            className="inline-flex items-center justify-center border border-white/60 hover:bg-white/10 text-white px-8 py-4 text-xs font-sans font-semibold uppercase tracking-[0.2em] transition-all backdrop-blur-sm"
+            href="/products"
+            className="inline-flex items-center justify-center border border-white/80 text-white hover:bg-white/15 px-6 py-3 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors"
           >
-            <span>View Collections</span>
+            <span>Shop all</span>
           </Link>
         </div>
       </div>
 
       {slides.length > 1 ? (
         <>
-          <div className="absolute right-6 bottom-8 z-20 hidden md:flex items-center gap-3">
+          <div className="absolute right-6 bottom-8 z-20 hidden md:flex items-center gap-2">
             <button
               type="button"
               onClick={() => setActiveIndex((current) => (current - 1 + slides.length) % slides.length)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#F7F3ED]/60 bg-[#382F2A]/30 text-[#F7F3ED] backdrop-blur transition-all hover:bg-[#F7F3ED] hover:text-[#382F2A]"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#121212] transition-colors hover:bg-white"
               aria-label="Previous slide"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
             </button>
             <button
               type="button"
               onClick={() => setActiveIndex((current) => (current + 1) % slides.length)}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-[#F7F3ED]/60 bg-[#382F2A]/30 text-[#F7F3ED] backdrop-blur transition-all hover:bg-[#F7F3ED] hover:text-[#382F2A]"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#121212] transition-colors hover:bg-white"
               aria-label="Next slide"
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
             </button>
           </div>
 
-          <div className="absolute bottom-4 left-6 z-20 flex gap-2 sm:hidden">
+          <div className="absolute bottom-3.5 left-1/2 -translate-x-1/2 z-20 flex gap-1.5 sm:hidden">
             {slides.map((slide, index) => (
               <button
                 key={slide.id}
@@ -124,7 +146,7 @@ export function HomeHeroCarousel({ slides }: HomeHeroCarouselProps) {
                 onClick={() => setActiveIndex(index)}
                 aria-label={`Go to slide ${index + 1}`}
                 className={`h-1.5 rounded-full transition-all ${
-                  index === activeIndex ? 'w-8 bg-[#C5A574]' : 'w-2 bg-white/50'
+                  index === activeIndex ? 'w-6 bg-white' : 'w-1.5 bg-white/50'
                 }`}
               />
             ))}

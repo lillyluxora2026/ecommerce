@@ -5,6 +5,7 @@ import Script from "next/script";
 import "./globals.css";
 import { Navbar } from "@/components/ui/Navbar";
 import { Footer } from "@/components/ui/Footer";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { AuthSessionSync } from "@/components/providers/AuthSessionSync";
 import { AnalyticsConsent } from "@/components/providers/AnalyticsConsent";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -132,7 +133,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="min-h-full flex flex-col font-sans bg-[#F7F3ED] text-[#382F2A] selection:bg-[#C5A574]/25">
+      <body className="min-h-full flex flex-col font-sans bg-white text-[#121212] selection:bg-[#121212]/10">
         <noscript>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -151,6 +152,7 @@ export default function RootLayout({
           <Navbar />
           <div className="flex-1">{children}</div>
           <Footer />
+          <WhatsAppButton />
           <Suspense fallback={null}>
             <AuthModal />
           </Suspense>

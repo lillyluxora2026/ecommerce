@@ -120,7 +120,7 @@ function highlightMatch(text: string, query: string) {
     return (
       <>
         {text.slice(0, directIdx)}
-        <span className="text-[#8B7768] font-medium underline decoration-[#C5A574]/60 underline-offset-2">{text.slice(directIdx, directIdx + normalizedQuery.length)}</span>
+        <span className="text-[#121212] font-medium underline underline-offset-2">{text.slice(directIdx, directIdx + normalizedQuery.length)}</span>
         {text.slice(directIdx + normalizedQuery.length)}
       </>
     );
@@ -135,7 +135,7 @@ function highlightMatch(text: string, query: string) {
         {text.split(new RegExp(`(${normalizedQuery.replace(/\s+/g, '[-\\s]?')})`, 'i'))
           .map((part, i) =>
             i % 2 === 1
-              ? <span key={i} className="text-[#8B7768] font-medium underline decoration-[#C5A574]/60 underline-offset-2">{part}</span>
+              ? <span key={i} className="text-[#121212] font-medium underline underline-offset-2">{part}</span>
               : part
           )}
       </>
@@ -276,47 +276,47 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#F7F3ED]/98 backdrop-blur-md animate-in fade-in duration-200 text-[#382F2A]">
-      <div className="border-b border-[#D8CBBE] bg-[#EFE7DE]/50">
-        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 p-6">
-          <div className="flex flex-1 items-center gap-4">
-            <Search className="w-5 h-5 text-[#8B7768]" />
+    <div className="fixed inset-0 z-[100] flex flex-col bg-white animate-in fade-in duration-200 text-[#121212]">
+      <div className="border-b border-[#EBEBEB] bg-white">
+        <div className="mx-auto flex max-w-4xl items-center justify-between gap-4 p-5 sm:p-6">
+          <div className="flex flex-1 items-center gap-3.5">
+            <Search className="w-5 h-5 text-[#121212]" strokeWidth={1.5} />
             <div className="flex-1">
               <input
                 autoFocus
                 type="text"
-                placeholder="Search necklaces, earrings, bracelets, 18K gold..."
+                placeholder="Search necklaces, earrings, bracelets..."
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                className="w-full bg-transparent text-xl sm:text-2xl font-heading text-[#382F2A] outline-none placeholder:text-[#8B7E76]"
+                className="w-full bg-transparent text-lg sm:text-xl font-sans text-[#121212] outline-none placeholder:text-[#737373]"
               />
-              <p className="mt-1.5 text-[11px] font-sans uppercase tracking-[0.2em] text-[#63574F]">
-                {trimmedQuery.length >= 2 ? 'Use arrow keys to browse and Enter to open' : 'Type at least 2 letters to start'}
+              <p className="mt-1 text-[11px] font-sans text-[#555555]">
+                {trimmedQuery.length >= 2 ? 'Use arrow keys to browse and Enter to open' : 'Type at least 2 letters to search'}
               </p>
             </div>
           </div>
-          <button type="button" onClick={closeSearch} className="p-2 rounded-full text-[#63574F] hover:text-[#382F2A] hover:bg-[#D8CBBE]/40 transition-colors" aria-label="Close search">
-            <X className="w-6 h-6" />
+          <button type="button" onClick={closeSearch} className="p-2 text-[#121212] hover:bg-[#F5F5F5] transition-colors" aria-label="Close search">
+            <X className="w-5 h-5" strokeWidth={1.5} />
           </button>
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden p-6 font-sans">
+      <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col overflow-hidden p-5 sm:p-6 font-sans">
         {trimmedQuery.length < 2 ? (
           <div className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
-            <div className="rounded-3xl border border-[#D8CBBE] bg-white p-6 shadow-xs">
-              <span className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#8B7768]">Curated Search</span>
-              <h2 className="mt-2.5 text-2xl font-heading font-normal italic text-[#382F2A]">Find timeless pieces faster</h2>
-              <p className="mt-2.5 max-w-xl text-xs sm:text-sm leading-6 text-[#63574F]">
-                Search matches product names, collections, 18K PVD gold finishes, waterproof essentials, and jewellery categories. Press <span className="font-semibold text-[#382F2A]">/</span> anywhere to open search.
+            <div className="border border-[#EBEBEB] bg-white p-6">
+              <span className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#555555]">Quick Search</span>
+              <h2 className="mt-2 text-xl font-sans font-normal text-[#121212]">Find pieces faster</h2>
+              <p className="mt-2 max-w-xl text-xs sm:text-sm leading-6 text-[#555555]">
+                Search product names, collections, or 18K PVD gold finishes.
               </p>
-              <div className="mt-5 flex flex-wrap gap-2.5">
-                {['Necklace', 'Hoops', 'Clover', 'Bracelet', 'Ring'].map((term) => (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {['Necklace', 'Bracelet', 'Cuff', 'Pearl', 'Cherry'].map((term) => (
                   <button
                     key={term}
                     type="button"
                     onClick={() => setQuery(term)}
-                    className="rounded-full border border-[#D8CBBE] bg-[#F7F3ED] px-4 py-1.5 text-xs font-medium text-[#382F2A] transition-colors hover:border-[#8B7768] hover:bg-[#EFE7DE]"
+                    className="border border-[#E5E5E5] bg-[#FAFAFA] px-3.5 py-1.5 text-xs text-[#121212] transition-colors hover:border-[#121212] hover:bg-white"
                   >
                     {term}
                   </button>
@@ -324,58 +324,57 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-[#D8CBBE] bg-[#EFE7DE]/60 p-6">
-              <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#63574F]">
-                <Clock3 className="h-4 w-4 text-[#8B7768]" />
+            <div className="border border-[#EBEBEB] bg-[#FAFAFA] p-6">
+              <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#555555]">
+                <Clock3 className="h-4 w-4 text-[#121212]" strokeWidth={1.5} />
                 Recent searches
               </div>
-              <div className="mt-4 space-y-2.5">
+              <div className="mt-4 space-y-2">
                 {recentSearches.length > 0 ? (
                   recentSearches.map((term) => (
                     <button
                       key={term}
                       type="button"
                       onClick={() => setQuery(term)}
-                      className="flex w-full items-center justify-between rounded-2xl border border-[#D8CBBE] bg-white px-4 py-3 text-left text-xs sm:text-sm text-[#382F2A] transition-colors hover:border-[#8B7768]"
+                      className="flex w-full items-center justify-between border border-[#EBEBEB] bg-white px-4 py-2.5 text-left text-xs sm:text-sm text-[#121212] transition-colors hover:border-[#121212]"
                     >
                       <span>{term}</span>
-                      <ArrowRight className="h-4 w-4 text-[#8B7768]" />
+                      <ArrowRight className="h-4 w-4 text-[#555555]" strokeWidth={1.5} />
                     </button>
                   ))
                 ) : (
-                  <p className="text-xs sm:text-sm leading-6 text-[#63574F]">Your recent searches will appear here after you explore pieces.</p>
+                  <p className="text-xs sm:text-sm leading-6 text-[#555555]">Your recent searches will appear here.</p>
                 )}
               </div>
             </div>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto">
-            <div className="mb-5 flex items-center justify-between gap-3">
-              <p className="text-xs sm:text-sm text-[#63574F]">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <p className="text-xs sm:text-sm text-[#555555]">
                 {loading ? 'Searching collection...' : `${results.length} result${results.length === 1 ? '' : 's'} for "${trimmedQuery}"`}
               </p>
               <button
                 type="button"
                 onClick={() => openSearchResults(trimmedQuery)}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#8B7768] transition-colors hover:text-[#382F2A]"
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-[#121212] underline underline-offset-4 hover:opacity-75"
               >
                 View all matches
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
               </button>
             </div>
 
             {!loading && results.length === 0 ? (
-              <div className="rounded-3xl border border-[#D8CBBE] bg-white p-8 text-center">
-                <p className="text-xl font-heading text-[#382F2A]">No matching pieces found</p>
-                <p className="mt-2 text-xs sm:text-sm text-[#63574F]">
-                  Try searching for Necklace, Earrings, Bracelet, Ring, or 18K PVD Gold.
+              <div className="border border-[#EBEBEB] bg-white p-8 text-center">
+                <p className="text-lg font-sans text-[#121212]">No matching pieces found</p>
+                <p className="mt-2 text-xs sm:text-sm text-[#555555]">
+                  Try searching for Necklace, Earrings, Bracelet, or Pearl.
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {results.map((product, index) => {
                   const isSoldOut = product.stock === 0;
-                  const isPreorder = false;
 
                   return (
                     <Link
@@ -388,48 +387,44 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         closeSearch();
                       }}
                       className={cn(
-                        'group flex items-center gap-4 rounded-2xl border border-[#D8CBBE] bg-white p-4 transition-all hover:border-[#8B7768] hover:shadow-xs',
-                        activeIndex === index && 'border-[#8B7768] bg-[#EFE7DE]/40'
+                        'group flex items-center gap-4 border border-[#EBEBEB] bg-white p-3.5 transition-colors hover:border-[#121212]',
+                        activeIndex === index && 'border-[#121212] bg-[#FAFAFA]'
                       )}
                     >
-                      <div className="relative h-20 w-20 overflow-hidden rounded-xl bg-[#EFE7DE] border border-[#D8CBBE]/40 shrink-0">
+                      <div className="relative h-18 w-18 overflow-hidden bg-[#F6F6F6] shrink-0">
                         <Image
                           src={product.image}
                           alt={product.name}
                           fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="80px"
+                          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+                          sizes="72px"
                         />
                       </div>
 
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="truncate font-heading text-lg text-[#382F2A]">
+                          <span className="truncate font-sans text-sm sm:text-base text-[#121212]">
                             {highlightMatch(product.name, trimmedQuery)}
                           </span>
-                          <span
-                            className={cn(
-                              'rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em]',
-                              isSoldOut && 'bg-[#EFE7DE] text-[#63574F]',
-                              isPreorder && 'bg-[#C5A574]/25 text-[#8B7768]',
-                              !isSoldOut && !isPreorder && 'bg-[#2C6E49]/15 text-[#2C6E49]'
-                            )}
-                          >
-                            {isSoldOut ? 'Sold out' : isPreorder ? 'Preorder' : 'In stock'}
-                          </span>
+                          {isSoldOut && (
+                            <span className="bg-[#121212] text-white px-2 py-0.5 text-[10px] rounded-full">
+                              Sold out
+                            </span>
+                          )}
                         </div>
 
-                        <p className="mt-1 text-xs text-[#63574F] line-clamp-1">
-                          {[product.brand, product.collection, product.material].filter(Boolean).join(' · ') || 'Lily Luxora Demi-Fine'}
+                        <p className="mt-0.5 text-xs text-[#555555] line-clamp-1">
+                          {[product.brand, product.collection, product.material].filter(Boolean).join(' · ') || 'Lily Luxora'}
                         </p>
 
-                        <div className="mt-2.5 flex flex-wrap items-center gap-3 text-sm">
-                          <span className="font-semibold text-[#382F2A]">₹{product.price.toFixed(0)}</span>
-                          {product.original_price ? (
-                            <span className="text-xs text-[#8B7E76] line-through">₹{product.original_price.toFixed(0)}</span>
-                          ) : null}
-                          {product.is_free_delivery ? (
-                            <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#8B7768]">Free Delivery</span>
+                        <div className="mt-1.5 flex flex-wrap items-center gap-2.5 text-sm">
+                          <span className="text-[#121212] tabular-nums">
+                            Rs. {product.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} INR
+                          </span>
+                          {product.original_price && product.original_price > product.price ? (
+                            <span className="text-xs text-[#737373] line-through tabular-nums">
+                              Rs. {product.original_price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </span>
                           ) : null}
                         </div>
                       </div>

@@ -47,5 +47,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function CategorySlugPage({ params }: PageProps) {
   const { slug } = await params;
-  return <CategoryShell slug={slug} />;
+  return <CategoryShell key={slug} slug={slug} />;
 }

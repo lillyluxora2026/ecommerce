@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Menu, Search, User, Heart, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Menu, Search, User, Heart, ChevronDown, X } from 'lucide-react';
 import { useCartStore } from '@/store/cartStore';
 import { useState, useEffect, useSyncExternalStore } from 'react';
 import { cn } from '@/lib/utils';
@@ -10,7 +10,7 @@ import { SearchModal } from './SearchModal';
 import { CartDrawer } from './CartDrawer';
 import { useUserStore } from '@/store/userStore';
 import { supabase } from '@/lib/supabase';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { MarqueeStrip } from './MarqueeStrip';
 
 function subscribeToCartHydration(callback: () => void) {
@@ -32,6 +32,7 @@ export function Navbar() {
   const [collectionsDropdown, setCollectionsDropdown] = useState(false);
   const { user, setUser, setSession, setAuthModalOpen } = useUserStore();
   const router = useRouter();
+  const pathname = usePathname();
 
   const cartItemsCount = useCartStore((state) =>
     state.items.reduce((acc, item) => acc + item.quantity, 0)
@@ -45,7 +46,7 @@ export function Navbar() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 12);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -70,34 +71,32 @@ export function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full transition-all duration-300">
-        {/* 1. Slim Mocha-Brown Announcement Bar */}
+      <header className="sticky top-0 z-50 w-full transition-colors duration-200 bg-white">
         <MarqueeStrip />
 
-        {/* 2. Main Luxury Navigation Bar */}
         <div
           className={cn(
-            'w-full transition-all duration-300 border-b border-[#B7A596]/30',
+            'w-full transition-all duration-200 border-b border-[#EBEBEB]',
             scrolled
-              ? 'bg-[#F7F3ED]/98 backdrop-blur-md py-3.5 shadow-[0_4px_20px_rgba(56,47,42,0.04)]'
-              : 'bg-[#F7F3ED] py-4'
+              ? 'bg-white/95 backdrop-blur-md py-2.5 shadow-[0_2px_12px_rgba(0,0,0,0.03)]'
+              : 'bg-white py-3'
           )}
         >
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-12">
-            {/* Left: Brand Logo & Wordmark */}
-            <div className="flex items-center gap-4">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-3.5 sm:px-6 lg:px-10">
+            {/* Left: Mobile Menu Trigger + Brand Logo */}
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
                 aria-label="Open mobile navigation"
                 onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden text-[#382F2A] hover:text-[#8B7768] p-1"
+                className="lg:hidden text-[#121212] hover:opacity-70 p-1.5 -ml-1"
               >
-                <Menu className="w-5 h-5" />
+                <Menu className="w-5 h-5" strokeWidth={1.5} />
               </button>
 
               <Link
                 href="/"
-                className="group flex items-center leading-none transition-transform hover:opacity-90"
+                className="group flex items-center leading-none transition-opacity hover:opacity-85"
               >
                 <Image
                   src="/logo-v2.png"
@@ -105,14 +104,13 @@ export function Navbar() {
                   width={240}
                   height={68}
                   priority
-                  className="h-10 sm:h-12 w-auto object-contain"
+                  className="h-9 sm:h-11 w-auto object-contain"
                 />
               </Link>
             </div>
 
-            {/* Center: Editorial Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-8">
-              {/* Shop with dropdown */}
+            {/* Center: Clean Editorial Navigation */}
+            <nav aria-label="Primary" className="hidden lg:flex items-center gap-7">
               <div
                 className="relative"
                 onMouseEnter={() => setShopDropdown(true)}
@@ -120,43 +118,47 @@ export function Navbar() {
               >
                 <Link
                   href="/products"
-                  className="inline-flex items-center gap-1 text-[13px] font-sans font-medium text-[#382F2A] hover:text-[#8B7768] transition-colors py-2"
+                  aria-current={pathname === '/products' ? 'page' : undefined}
+                  className={cn(
+                    'inline-flex items-center gap-1 text-[13px] font-sans text-[#121212] hover:underline underline-offset-4 py-2',
+                    pathname === '/products' && 'underline'
+                  )}
                 >
                   <span>Shop</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#8B7E76]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#555555]" strokeWidth={1.5} />
                 </Link>
 
                 {shopDropdown && (
-                  <div className="absolute top-full left-0 w-48 bg-white border border-[#B7A596]/40 shadow-lg py-2 rounded-sm z-50">
+                  <div className="absolute top-full left-0 w-52 bg-white border border-[#EBEBEB] shadow-lg py-2 z-50">
                     <Link
                       href="/products"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
                       All Jewellery
                     </Link>
                     <Link
                       href="/category/necklaces"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
                       Necklaces
                     </Link>
                     <Link
                       href="/category/earrings"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
                       Earrings
                     </Link>
                     <Link
                       href="/category/bracelets"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
                       Bracelets
                     </Link>
                     <Link
-                      href="/category/rings"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      href="/products?maxPrice=1799"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
-                      Rings
+                      Under Rs. 1,799
                     </Link>
                   </div>
                 )}
@@ -164,19 +166,18 @@ export function Navbar() {
 
               <Link
                 href="/products?sort=new"
-                className="text-[13px] font-sans font-medium text-[#382F2A] hover:text-[#8B7768] transition-colors py-2"
+                className="text-[13px] font-sans text-[#121212] hover:underline underline-offset-4 py-2"
               >
                 New Arrivals
               </Link>
 
               <Link
                 href="/products?sort=featured"
-                className="text-[13px] font-sans font-medium text-[#382F2A] hover:text-[#8B7768] transition-colors py-2"
+                className="text-[13px] font-sans text-[#121212] hover:underline underline-offset-4 py-2"
               >
                 Bestsellers
               </Link>
 
-              {/* Collections with dropdown */}
               <div
                 className="relative"
                 onMouseEnter={() => setCollectionsDropdown(true)}
@@ -184,31 +185,41 @@ export function Navbar() {
               >
                 <Link
                   href="/category"
-                  className="inline-flex items-center gap-1 text-[13px] font-sans font-medium text-[#382F2A] hover:text-[#8B7768] transition-colors py-2"
+                  aria-current={pathname?.startsWith('/category') ? 'page' : undefined}
+                  className={cn(
+                    'inline-flex items-center gap-1 text-[13px] font-sans text-[#121212] hover:underline underline-offset-4 py-2',
+                    pathname?.startsWith('/category') && 'underline'
+                  )}
                 >
                   <span>Collections</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#8B7E76]" />
+                  <ChevronDown className="w-3.5 h-3.5 text-[#555555]" strokeWidth={1.5} />
                 </Link>
 
                 {collectionsDropdown && (
-                  <div className="absolute top-full left-0 w-52 bg-white border border-[#B7A596]/40 shadow-lg py-2 rounded-sm z-50">
+                  <div className="absolute top-full left-0 w-56 bg-white border border-[#EBEBEB] shadow-lg py-2 z-50">
                     <Link
                       href="/category/necklaces"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
-                      The 18K Gold Edit
+                      Necklaces &amp; Pendants
                     </Link>
                     <Link
                       href="/category/earrings"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
-                      Waterproof Essentials
+                      Waterproof Earrings
                     </Link>
                     <Link
                       href="/category/bracelets"
-                      className="block px-4 py-2 text-xs font-sans text-[#382F2A] hover:bg-[#F7F3ED] hover:text-[#8B7768]"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
                     >
-                      Timeless Stacks
+                      Bracelets &amp; Cuffs
+                    </Link>
+                    <Link
+                      href="/category"
+                      className="block px-4 py-2 text-[13px] font-sans text-[#121212] hover:bg-[#F7F7F7]"
+                    >
+                      Explore All Collections
                     </Link>
                   </div>
                 )}
@@ -216,64 +227,67 @@ export function Navbar() {
 
               <Link
                 href="/about"
-                className="text-[13px] font-sans font-medium text-[#382F2A] hover:text-[#8B7768] transition-colors py-2"
+                aria-current={pathname === '/about' ? 'page' : undefined}
+                className={cn(
+                  'text-[13px] font-sans text-[#121212] hover:underline underline-offset-4 py-2',
+                  pathname === '/about' && 'underline'
+                )}
               >
                 About
               </Link>
             </nav>
 
-            {/* Right: Utility Icons */}
-            <div className="flex items-center gap-5 sm:gap-6">
+            {/* Right: Minimal Utility Icons */}
+            <div className="flex items-center gap-3.5 sm:gap-5 shrink-0">
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
                 title="Search collection"
                 aria-label="Search collection"
-                className="text-[#382F2A] hover:text-[#8B7768] transition-colors p-1"
+                className="text-[#121212] hover:opacity-65 transition-opacity p-1.5"
               >
-                <Search className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.75]" />
+                <Search className="w-[18px] h-[18px]" strokeWidth={1.5} />
               </button>
 
               {user ? (
                 <Link
                   href="/profile"
                   aria-label="My Account"
-                  className="text-[#382F2A] hover:text-[#8B7768] transition-colors p-1"
+                  className="text-[#121212] hover:opacity-65 transition-opacity p-1.5"
                 >
-                  <User className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.75]" />
+                  <User className="w-[18px] h-[18px]" strokeWidth={1.5} />
                 </Link>
               ) : (
                 <button
                   type="button"
                   onClick={() => setAuthModalOpen(true)}
                   aria-label="Sign In"
-                  className="text-[#382F2A] hover:text-[#8B7768] transition-colors p-1"
+                  className="text-[#121212] hover:opacity-65 transition-opacity p-1.5"
                 >
-                  <User className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.75]" />
+                  <User className="w-[18px] h-[18px]" strokeWidth={1.5} />
                 </button>
               )}
 
               <Link
                 href="/wishlist"
                 aria-label="Wishlist"
-                className="relative text-[#382F2A] hover:text-[#8B7768] transition-colors p-1"
+                className="relative hidden sm:inline-flex text-[#121212] hover:opacity-65 transition-opacity p-1.5"
               >
-                <Heart className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.75]" />
-                <span className="absolute -top-1 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#382F2A] bg-[#F7F3ED] text-[8px] font-sans font-semibold text-[#382F2A]">
-                  0
-                </span>
+                <Heart className="w-[18px] h-[18px]" strokeWidth={1.5} />
               </Link>
 
               <button
                 type="button"
                 onClick={() => setCartOpen(true)}
                 aria-label="Shopping Bag"
-                className="relative text-[#382F2A] hover:text-[#8B7768] transition-colors p-1"
+                className="relative text-[#121212] hover:opacity-65 transition-opacity p-1.5"
               >
-                <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.75]" />
-                <span className="absolute -top-1 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-[#382F2A] bg-[#F7F3ED] text-[8px] font-sans font-semibold text-[#382F2A]">
-                  {visibleCartItemsCount}
-                </span>
+                <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={1.5} />
+                {visibleCartItemsCount > 0 && (
+                  <span className="absolute top-0 right-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#121212] px-1 text-[10px] font-sans font-medium text-white tabular-nums">
+                    {visibleCartItemsCount}
+                  </span>
+                )}
               </button>
             </div>
           </div>
@@ -283,19 +297,20 @@ export function Navbar() {
       {/* Mobile Drawer */}
       <div
         className={cn(
-          'fixed inset-0 z-[70] bg-[#382F2A]/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden',
+          'fixed inset-0 z-[70] bg-black/40 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden',
           mobileMenuOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         )}
         onClick={() => setMobileMenuOpen(false)}
       />
 
       <aside
+        aria-label="Mobile navigation"
         className={cn(
-          'fixed inset-y-0 left-0 z-[80] w-[85vw] max-w-sm bg-[#F7F3ED] border-r border-[#B7A596]/40 p-6 transition-transform duration-300 lg:hidden overflow-y-auto',
+          'fixed inset-y-0 left-0 z-[80] w-[85vw] max-w-sm bg-white border-r border-[#EBEBEB] p-6 transition-transform duration-300 lg:hidden overflow-y-auto',
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex items-center justify-between border-b border-[#B7A596]/30 pb-4">
+        <div className="flex items-center justify-between border-b border-[#EBEBEB] pb-4">
           <Link href="/" onClick={() => setMobileMenuOpen(false)}>
             <Image
               src="/logo-v2.png"
@@ -308,52 +323,67 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setMobileMenuOpen(false)}
-            className="text-xs uppercase tracking-widest text-[#8B7768]"
+            aria-label="Close navigation"
+            className="p-2 text-[#121212] hover:bg-[#F5F5F5]"
           >
-            Close
+            <X className="w-5 h-5" strokeWidth={1.5} />
           </button>
         </div>
 
-        <nav className="mt-6 space-y-3 font-sans text-sm">
+        <nav className="mt-6 space-y-1 font-sans text-[15px]">
           <Link
             href="/products"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-[#382F2A] hover:text-[#8B7768]"
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
           >
             Shop All
           </Link>
           <Link
             href="/category/necklaces"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-[#382F2A] hover:text-[#8B7768]"
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
           >
             Necklaces
           </Link>
           <Link
             href="/category/earrings"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-[#382F2A] hover:text-[#8B7768]"
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
           >
             Earrings
           </Link>
           <Link
             href="/category/bracelets"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-[#382F2A] hover:text-[#8B7768]"
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
           >
             Bracelets
           </Link>
           <Link
-            href="/category/rings"
+            href="/products?maxPrice=1799"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-[#382F2A] hover:text-[#8B7768]"
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
           >
-            Rings
+            Under Rs. 1,799
+          </Link>
+          <Link
+            href="/category"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
+          >
+            Collections
+          </Link>
+          <Link
+            href="/wishlist"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
+          >
+            Wishlist
           </Link>
           <Link
             href="/about"
             onClick={() => setMobileMenuOpen(false)}
-            className="block py-2 text-[#382F2A] hover:text-[#8B7768]"
+            className="block py-2.5 text-[#121212] border-b border-[#F3F3F3]"
           >
             About Us
           </Link>
@@ -361,7 +391,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="block py-2 text-xs text-red-700 uppercase tracking-wider"
+              className="block w-full text-left py-2.5 text-sm text-red-700"
             >
               Sign Out
             </button>

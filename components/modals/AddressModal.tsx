@@ -53,18 +53,18 @@ function AddressModalForm({
   };
 
   return (
-    <div className="w-full max-w-2xl rounded-3xl bg-[#F7F3ED] border border-[#D8CBBE] flex flex-col animate-in zoom-in-95 duration-200 max-h-[90vh] shadow-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-5 border-b border-[#D8CBBE] bg-[#EFE7DE]/60">
-        <h2 className="text-xl sm:text-2xl font-heading font-normal italic text-[#382F2A]">
+    <div className="w-full max-w-2xl bg-white border border-[#EBEBEB] flex flex-col animate-in zoom-in-95 duration-200 max-h-[90vh] shadow-2xl overflow-hidden">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[#EBEBEB] bg-white">
+        <h2 className="text-lg font-sans font-medium text-[#121212]">
           {initialAddress ? 'Edit Shipping Address' : 'Add Shipping Address'}
         </h2>
-        <button type="button" aria-label="Close address dialog" onClick={onClose} className="p-2 rounded-full text-[#63574F] hover:text-[#382F2A] hover:bg-[#D8CBBE]/40 transition-colors" disabled={loading}>
-          <X className="w-5 h-5" />
+        <button type="button" aria-label="Close address dialog" onClick={onClose} className="p-2 text-[#121212] hover:bg-[#F5F5F5] transition-colors" disabled={loading}>
+          <X className="w-5 h-5" strokeWidth={1.5} />
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 space-y-4 text-sm font-sans overflow-y-auto">
-        {error ? <p className="rounded-xl bg-[#FDF2F2] border border-[#F5C2C2] px-4 py-2.5 text-xs text-[#9B2C2C]">{error}</p> : null}
+        {error ? <p className="bg-red-50 border border-red-200 px-4 py-2.5 text-xs text-red-800">{error}</p> : null}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
@@ -72,14 +72,14 @@ function AddressModalForm({
             placeholder="Full Name"
             value={formData.fullName}
             onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-            className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]"
+            className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-[#121212] placeholder:text-[#737373]"
           />
           <input
             required
             placeholder="Phone Number"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]"
+            className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-[#121212] placeholder:text-[#737373]"
           />
         </div>
 
@@ -88,7 +88,7 @@ function AddressModalForm({
           placeholder="Address Line"
           value={formData.addressLine}
           onChange={(e) => setFormData({ ...formData, addressLine: e.target.value })}
-          className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]"
+          className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-[#121212] placeholder:text-[#737373]"
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -97,17 +97,17 @@ function AddressModalForm({
             placeholder="City"
             value={formData.city}
             onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-            className="bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]"
+            className="bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-[#121212] placeholder:text-[#737373]"
           />
           <select
             required
             value={formData.state}
             onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-            className="bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]"
+            className="bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-[#121212]"
           >
-            <option value="" className="bg-white text-[#63574F]">Select State</option>
+            <option value="" className="bg-white text-[#555555]">Select State</option>
             {INDIA_STATES.map((state) => (
-              <option key={state} value={state} className="bg-white text-[#382F2A]">
+              <option key={state} value={state} className="bg-white text-[#121212]">
                 {state}
               </option>
             ))}
@@ -117,16 +117,16 @@ function AddressModalForm({
             placeholder="Pincode / ZIP"
             value={formData.pincode}
             onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-            className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76]"
+            className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-[#121212] placeholder:text-[#737373]"
           />
         </div>
 
-        <label className="flex items-center gap-3 text-xs sm:text-sm text-[#63574F] cursor-pointer pt-1">
+        <label className="flex items-center gap-3 text-xs sm:text-sm text-[#555555] cursor-pointer pt-1">
           <input
             type="checkbox"
             checked={Boolean(formData.isDefault)}
             onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
-            className="h-4 w-4 accent-[#6D5C50] rounded border-[#B7A596]"
+            className="h-4 w-4 accent-[#121212]"
           />
           <span>Set as default delivery address</span>
         </label>
@@ -135,15 +135,15 @@ function AddressModalForm({
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] py-3.5 text-xs font-semibold tracking-[0.16em] uppercase transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+            className="flex-1 bg-[#121212] hover:bg-[#2C2C2C] text-white py-3.5 text-xs sm:text-[13px] font-medium tracking-wide transition-colors disabled:opacity-50"
           >
-            {loading ? 'Saving...' : initialAddress ? 'Update Address' : 'Save Address'}
+            {loading ? 'Saving...' : initialAddress ? 'Update address' : 'Save address'}
           </button>
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="flex-1 rounded-full border border-[#B7A596] bg-white hover:bg-[#EFE7DE] text-[#382F2A] py-3.5 text-xs font-semibold tracking-[0.16em] uppercase transition-colors disabled:opacity-50"
+            className="flex-1 border border-[#D4D4D4] bg-white hover:border-[#121212] text-[#121212] py-3.5 text-xs sm:text-[13px] font-medium tracking-wide transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
@@ -164,7 +164,7 @@ export function AddressModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#382F2A]/50 backdrop-blur-sm animate-in fade-in px-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-in fade-in px-4">
       <AddressModalForm
         key={initialAddress?.id ?? 'new-address'}
         onClose={onClose}

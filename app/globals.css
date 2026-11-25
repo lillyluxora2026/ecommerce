@@ -1,13 +1,13 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ivory: #F7F3ED;
-  --color-mushroom: #D8CBBE;
-  --color-taupe: #B7A596;
-  --color-mocha: #8B7768;
-  --color-mocha-hover: #735F51;
-  --color-gold: #C5A574;
-  --color-espresso: #382F2A;
+  --color-ivory: #FFFFFF;
+  --color-mushroom: #F4F4F4;
+  --color-taupe: #E5E5E5;
+  --color-mocha: #121212;
+  --color-mocha-hover: #2C2C2C;
+  --color-gold: #B89B6A;
+  --color-espresso: #121212;
 
   --color-primary: var(--surface-primary);
   --color-card: var(--surface-card);
@@ -20,59 +20,60 @@
   --color-border: var(--border-color);
 
   --font-sans: var(--font-dm-sans), "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-heading: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  --font-heading: var(--font-dm-sans), "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-cormorant: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
   --font-dm-sans: var(--font-dm-sans), "DM Sans", sans-serif;
 }
 
 @layer base {
   :root {
-    --surface-primary: #F7F3ED;
+    --surface-primary: #FFFFFF;
     --surface-card: #FFFFFF;
-    --surface-secondary: #D8CBBE;
-    --surface-muted: #EFE8DF;
-    --text-primary: #382F2A;
-    --text-secondary: #63574F;
-    --text-muted: #8B7E76;
-    --accent-gold: #C5A574;
-    --accent-mocha: #8B7768;
-    --hero-accent: #8B7768;
-    --border-color: #B7A596;
-    --overlay-control-bg: rgb(247 243 237 / 0.88);
-    --overlay-control-hover: rgb(216 203 190 / 0.95);
-    --overlay-control-border: rgb(183 165 150 / 0.5);
-    --overlay-control-text: #382F2A;
-    --overlay-dot: rgb(56 47 42 / 0.4);
-    --shadow-panel: 0 20px 50px rgb(56 47 42 / 0.08);
-    --shadow-soft: 0 10px 30px rgb(56 47 42 / 0.05);
-    --logo-surface: #F7F3ED;
-    --logo-border: #B7A596;
-    --notice-error-bg: #FDF2F2;
-    --notice-error-border: #F5C2C2;
-    --notice-error-text: #9B2C2C;
-    --notice-success-bg: #F2F7F4;
-    --notice-success-border: #BFD8C9;
-    --notice-success-text: #2C6E49;
-    --notice-info-bg: #F7F3ED;
-    --notice-info-border: #B7A596;
-    --notice-info-text: #382F2A;
-    --page-background: #F7F3ED;
+    --surface-secondary: #F6F6F6;
+    --surface-muted: #F7F7F7;
+    --text-primary: #121212;
+    --text-secondary: #555555;
+    --text-muted: #737373;
+    --accent-gold: #B89B6A;
+    --accent-mocha: #121212;
+    --hero-accent: #121212;
+    --border-color: #E5E5E5;
+    --overlay-control-bg: rgb(255 255 255 / 0.92);
+    --overlay-control-hover: rgb(245 245 245 / 0.98);
+    --overlay-control-border: rgb(18 18 18 / 0.14);
+    --overlay-control-text: #121212;
+    --overlay-dot: rgb(18 18 18 / 0.35);
+    --shadow-panel: 0 20px 50px rgb(0 0 0 / 0.08);
+    --shadow-soft: 0 8px 24px rgb(0 0 0 / 0.05);
+    --logo-surface: #FFFFFF;
+    --logo-border: #E5E5E5;
+    --notice-error-bg: #FEF2F2;
+    --notice-error-border: #FECACA;
+    --notice-error-text: #991B1B;
+    --notice-success-bg: #F0FDF4;
+    --notice-success-border: #BBF7D0;
+    --notice-success-text: #166534;
+    --notice-info-bg: #F8F8F8;
+    --notice-info-border: #E5E5E5;
+    --notice-info-text: #121212;
+    --page-background: #FFFFFF;
   }
 
   html[data-theme="light"],
   html {
     color-scheme: light;
-    background-color: var(--color-primary);
+    background-color: #FFFFFF;
   }
 
   body {
-    min-height: 100vh;
-    background-color: #F7F3ED;
-    color: #382F2A;
+    min-height: 100dvh;
+    background-color: #FFFFFF;
+    color: #121212;
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
     transition:
-      background-color 240ms ease,
-      color 240ms ease;
+      background-color 200ms ease,
+      color 200ms ease;
   }
 
   h1,
@@ -84,6 +85,11 @@
     font-family: var(--font-heading);
     color: var(--text-primary);
     letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 
@@ -185,41 +191,38 @@
     }
   }
 
-  /* Luxury understated button styling */
+  /* Minimal editorial button styling */
   .btn-luxury {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: #8B7768;
-    color: #F7F3ED;
+    background-color: #121212;
+    color: #FFFFFF;
     padding: 0.875rem 2rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    transition: all 0.25s ease;
-    border: 1px solid transparent;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    border: 1px solid #121212;
   }
   .btn-luxury:hover {
-    background-color: #735F51;
-    color: #FFFFFF;
+    background-color: #2C2C2C;
+    border-color: #2C2C2C;
   }
   .btn-luxury-outline {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     background-color: transparent;
-    color: #382F2A;
+    color: #121212;
     padding: 0.875rem 2rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    border: 1px solid #B7A596;
-    transition: all 0.25s ease;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    border: 1px solid #121212;
+    transition: all 0.2s ease;
   }
   .btn-luxury-outline:hover {
-    border-color: #8B7768;
-    background-color: #D8CBBE;
+    background-color: #F5F5F5;
   }
 }

@@ -155,34 +155,34 @@ export function CouponModal({ isOpen, onClose, onApply, cartTotal }: CouponModal
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#382F2A]/50 backdrop-blur-sm animate-in fade-in px-4">
-      <div className="w-full max-w-md rounded-3xl bg-[#F7F3ED] border border-[#D8CBBE] flex flex-col p-6 sm:p-7 animate-in zoom-in-95 duration-200 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#D8CBBE] pb-4 mb-6">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-in fade-in px-4">
+      <div className="w-full max-w-md bg-white border border-[#EBEBEB] flex flex-col p-6 sm:p-7 animate-in zoom-in-95 duration-200 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#EBEBEB] pb-4 mb-5">
           <div className="flex items-center gap-2.5">
-            <Tag className="w-5 h-5 text-[#8B7768]" />
-            <h2 className="text-xl sm:text-2xl font-heading font-normal italic text-[#382F2A]">Apply Promo Code</h2>
+            <Tag className="w-4 h-4 text-[#121212]" strokeWidth={1.5} />
+            <h2 className="text-lg font-sans font-medium text-[#121212]">Apply Promo Code</h2>
           </div>
-          <button type="button" aria-label="Close promo dialog" onClick={onClose} className="p-2 rounded-full text-[#63574F] hover:text-[#382F2A] hover:bg-[#EFE7DE] transition-colors -mr-1">
-            <X className="w-5 h-5" />
+          <button type="button" aria-label="Close promo dialog" onClick={onClose} className="p-2 text-[#121212] hover:bg-[#F5F5F5] transition-colors -mr-1">
+            <X className="w-5 h-5" strokeWidth={1.5} />
           </button>
         </div>
 
         <form onSubmit={handleApply} className="space-y-4 text-sm font-sans">
-          {error && <p className="rounded-xl text-[#9B2C2C] text-xs bg-[#FDF2F2] px-4 py-3 border border-[#F5C2C2]">{error}</p>}
+          {error && <p className="text-red-800 text-xs bg-red-50 px-4 py-3 border border-red-200">{error}</p>}
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#63574F]">Eligible Offers</p>
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#555555]">Eligible Offers</p>
               {eligibleCoupons.length > 0 ? (
-                <span className="text-[11px] uppercase tracking-[0.16em] text-[#8B7768] font-medium">
+                <span className="text-[11px] text-[#555555] font-medium">
                   {eligibleCoupons.length} available
                 </span>
               ) : null}
             </div>
 
-            <div className="max-h-64 space-y-3 overflow-y-auto pr-1">
+            <div className="max-h-64 space-y-2.5 overflow-y-auto pr-1">
               {couponsLoading ? (
-                <div className="rounded-2xl border border-[#D8CBBE] bg-white p-4 text-xs text-[#63574F]">
+                <div className="border border-[#EBEBEB] bg-[#FAFAFA] p-4 text-xs text-[#555555]">
                   Loading available offers...
                 </div>
               ) : eligibleCoupons.length > 0 ? (
@@ -191,28 +191,28 @@ export function CouponModal({ isOpen, onClose, onApply, cartTotal }: CouponModal
                     key={coupon.id}
                     type="button"
                     onClick={() => applyCoupon(coupon)}
-                    className="w-full rounded-2xl border border-[#D8CBBE] bg-white p-4 text-left transition-all hover:border-[#8B7768] hover:shadow-xs"
+                    className="w-full border border-[#EBEBEB] bg-white p-4 text-left transition-colors hover:border-[#121212]"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#382F2A]">
+                        <p className="text-sm font-semibold uppercase tracking-wider text-[#121212]">
                           {coupon.code}
                         </p>
-                        <p className="mt-1 text-xs sm:text-sm text-[#382F2A]">{getCouponOfferLabel(coupon)}</p>
+                        <p className="mt-1 text-xs sm:text-sm text-[#121212]">{getCouponOfferLabel(coupon)}</p>
                         {coupon.description ? (
-                          <p className="mt-1 text-xs text-[#63574F]">{coupon.description}</p>
+                          <p className="mt-1 text-xs text-[#555555]">{coupon.description}</p>
                         ) : null}
                         {toNumber(coupon.min_order_value) > 0 ? (
-                          <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-[#8B7E76]">
+                          <p className="mt-2 text-[10px] uppercase tracking-wider text-[#737373]">
                             Valid on orders above ₹{toNumber(coupon.min_order_value)}
                           </p>
                         ) : null}
                       </div>
                       <div className="shrink-0 text-right">
-                        <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-[#2C6E49]">
+                        <span className="block text-xs font-medium text-emerald-700">
                           Save ₹{getDiscountAmount(coupon, cartTotal).toFixed(0)}
                         </span>
-                        <span className="mt-2.5 inline-block rounded-full bg-[#EFE7DE] border border-[#D8CBBE] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#382F2A]">
+                        <span className="mt-2 inline-block bg-[#F4F4F4] border border-[#E5E5E5] px-3.5 py-1 text-[11px] font-medium text-[#121212]">
                           Apply
                         </span>
                       </div>
@@ -220,15 +220,15 @@ export function CouponModal({ isOpen, onClose, onApply, cartTotal }: CouponModal
                   </button>
                 ))
               ) : (
-                <div className="rounded-2xl border border-[#D8CBBE] bg-[#EFE7DE]/60 p-4 text-xs sm:text-sm text-[#63574F]">
+                <div className="border border-[#EBEBEB] bg-[#FAFAFA] p-4 text-xs sm:text-sm text-[#555555]">
                   No eligible coupons for this bag total right now.
                 </div>
               )}
             </div>
           </div>
-          
-          <div className="border-t border-[#D8CBBE] pt-4">
-            <p className="mb-2.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#63574F]">Have a promo code?</p>
+
+          <div className="border-t border-[#EBEBEB] pt-4">
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#555555]">Have a promo code?</p>
           </div>
 
           <input
@@ -236,15 +236,15 @@ export function CouponModal({ isOpen, onClose, onApply, cartTotal }: CouponModal
             placeholder="Enter promo code"
             value={code}
             onChange={e => setCode(e.target.value.toUpperCase())}
-            className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A] placeholder:text-[#8B7E76] uppercase tracking-wider"
+            className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-[#121212] placeholder:text-[#737373] uppercase tracking-wider"
           />
-          
+
           <button
             type="submit"
             disabled={loading || !code}
-            className="w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] py-3.5 text-xs font-semibold tracking-[0.16em] uppercase transition-all shadow-sm active:scale-[0.98] disabled:opacity-50"
+            className="w-full bg-[#121212] hover:bg-[#2C2C2C] text-white py-3.5 text-xs sm:text-[13px] font-medium tracking-wide transition-colors disabled:opacity-50"
           >
-            {loading ? 'Verifying...' : 'Apply Discount'}
+            {loading ? 'Verifying...' : 'Apply discount'}
           </button>
         </form>
       </div>

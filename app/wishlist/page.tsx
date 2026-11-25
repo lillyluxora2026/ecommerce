@@ -103,65 +103,62 @@ export default function WishlistPage() {
 
   if (!user) {
     return (
-      <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
-        <span className="text-[#8B7768] uppercase tracking-[0.24em] text-xs font-sans font-medium mb-3 block">
+      <main className="w-full bg-white text-[#121212] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
+        <span className="text-[#555555] uppercase tracking-[0.16em] text-xs font-sans font-medium mb-2.5 block">
           Saved Pieces
         </span>
-        <h1 className="text-3xl md:text-5xl font-heading font-normal tracking-tight text-[#382F2A] mb-4">
+        <h1 className="text-2xl sm:text-4xl font-sans font-normal tracking-tight text-[#121212] mb-3">
           Your Wishlist
         </h1>
-        <p className="text-xs sm:text-sm font-sans text-[#63574F] max-w-sm mb-8 leading-relaxed">
-          Please sign in to view and manage your saved 18K PVD gold-plated and stainless steel favourites.
+        <p className="text-xs sm:text-sm font-sans text-[#555555] max-w-sm mb-7 leading-relaxed">
+          Sign in to view and manage your saved pieces.
         </p>
         <button
           onClick={() => setAuthModalOpen(true)}
-          className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-8 py-3.5 text-xs font-sans font-medium tracking-[0.16em] uppercase transition-all shadow-sm"
+          className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-8 py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors"
         >
-          Sign In to Account
+          Sign in
         </button>
       </main>
     );
   }
 
   return (
-    <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 md:px-12 py-10 md:py-16">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#B7A596]/40 pb-6 mb-8 gap-4">
+    <main className="w-full bg-white text-[#121212] min-h-screen">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 py-8 sm:py-12">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between border-b border-[#EBEBEB] pb-5 mb-7 gap-4">
           <div>
-            <span className="text-[#8B7768] uppercase tracking-[0.22em] text-xs font-sans font-medium block mb-1">
-              Personal Wishlist
-            </span>
-            <h1 className="text-3xl md:text-4xl font-heading font-normal tracking-tight text-[#382F2A]">
+            <h1 className="text-2xl sm:text-3xl font-sans font-normal tracking-tight text-[#121212]">
               Saved Items ({items.length})
             </h1>
           </div>
           <Link
             href="/products"
-            className="text-xs font-sans font-medium text-[#8B7768] hover:text-[#58483D] underline underline-offset-4"
+            className="text-xs sm:text-[13px] font-sans text-[#121212] underline underline-offset-4 hover:opacity-70"
           >
-            ← Explore Catalogue
+            Continue shopping
           </Link>
         </div>
 
         {loading ? (
           <div className="py-24 text-center">
-            <p className="text-sm font-sans text-[#63574F] animate-pulse">Loading your saved jewellery...</p>
+            <p className="text-sm font-sans text-[#555555] animate-pulse">Loading your saved jewellery...</p>
           </div>
         ) : items.length === 0 ? (
-          <div className="rounded-2xl border border-[#B7A596]/40 bg-white py-24 px-4 text-center shadow-xs max-w-xl mx-auto">
-            <h2 className="text-xl font-heading font-normal text-[#382F2A] mb-2">No Saved Items Yet</h2>
-            <p className="text-xs sm:text-sm font-sans text-[#63574F] max-w-md mx-auto mb-6 leading-relaxed">
-              Click the heart icon on any product to save your favourite 18K PVD gold-plated pieces for later.
+          <div className="border border-[#EBEBEB] bg-white py-20 px-4 text-center max-w-xl mx-auto">
+            <h2 className="text-xl font-sans font-normal text-[#121212] mb-2">No saved items yet</h2>
+            <p className="text-xs sm:text-sm font-sans text-[#555555] max-w-md mx-auto mb-6 leading-relaxed">
+              Save your favourite 18K PVD gold-plated pieces from any product page to revisit them later.
             </p>
             <Link
               href="/products"
-              className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-6 py-2.5 text-xs font-sans font-medium tracking-wide uppercase inline-block shadow-sm"
+              className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-6 py-3 text-xs font-sans font-medium tracking-wide inline-block transition-colors"
             >
-              Discover New Arrivals
+              Discover pieces
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 sm:gap-x-5 sm:gap-y-9">
             {items.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

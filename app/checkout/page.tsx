@@ -158,7 +158,7 @@ const EMPTY_FORM: CheckoutForm = {
 const FIELD_ORDER: FieldName[] = ['email', 'firstName', 'lastName', 'address', 'city', 'state', 'pincode', 'phone'];
 
 const INPUT_CLASS =
-  'w-full rounded-xl border bg-white px-4 py-3.5 text-[#382F2A] outline-none transition-colors placeholder:text-[#8B7E76] focus:border-[#8B7768]';
+  'w-full border bg-white px-4 py-3 text-[#121212] outline-none transition-colors placeholder:text-[#737373] focus:border-[#121212]';
 
 const moneyFormatter = new Intl.NumberFormat('en-IN', {
   style: 'currency',
@@ -311,11 +311,11 @@ export default function CheckoutPage() {
     onChange: handleChange,
     onBlur: handleBlur,
     'aria-invalid': Boolean(fieldError(name)),
-    className: `${INPUT_CLASS} ${fieldError(name) ? 'border-[#A63A3A]' : 'border-[#D8CBBE]'}`,
+    className: `${INPUT_CLASS} ${fieldError(name) ? 'border-red-600' : 'border-[#D4D4D4]'}`,
   });
 
   const renderFieldError = (name: FieldName) =>
-    fieldError(name) ? <p className="mt-1.5 text-xs text-[#A63A3A]">{fieldError(name)}</p> : null;
+    fieldError(name) ? <p className="mt-1.5 text-xs text-red-700">{fieldError(name)}</p> : null;
 
   const applyAddressToForm = useCallback((address: CustomerAddress) => {
     const effectiveFullName = getEffectiveAddressName(address.fullName, profileFullName);
@@ -889,7 +889,7 @@ export default function CheckoutPage() {
           contact: getPhoneDigits(formData.phone),
         },
         theme: {
-          color: '#8B7768'
+          color: '#121212'
         },
         modal: {
           ondismiss: () => {
@@ -924,7 +924,7 @@ export default function CheckoutPage() {
 
   if (!ready) {
     return (
-      <main className="flex min-h-[70vh] w-full items-center justify-center bg-[#F7F3ED] text-sm font-sans text-[#63574F]">
+      <main className="flex min-h-[70vh] w-full items-center justify-center bg-white text-sm font-sans text-[#555555]">
         Loading checkout...
       </main>
     );
@@ -932,26 +932,26 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
+      <main className="w-full bg-white text-[#121212] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
         {checkoutNotice && (
           <div className="mb-8 w-full max-w-md text-left">
             <NoticeBanner tone={checkoutNotice.tone}>{checkoutNotice.text}</NoticeBanner>
           </div>
         )}
-        <span className="text-[#8B7768] uppercase tracking-[0.24em] text-xs font-sans font-medium mb-3 block">
+        <span className="text-[#555555] uppercase tracking-[0.16em] text-xs font-sans font-medium mb-2.5 block">
           Checkout
         </span>
-        <h1 className="text-3xl md:text-5xl font-heading font-normal tracking-tight text-[#382F2A] mb-4">
-          Your Cart is Empty
+        <h1 className="text-2xl sm:text-4xl font-sans font-normal tracking-tight text-[#121212] mb-3">
+          Your cart is empty
         </h1>
-        <p className="text-xs sm:text-sm font-sans text-[#63574F] max-w-sm mb-8 leading-relaxed">
+        <p className="text-xs sm:text-sm font-sans text-[#555555] max-w-sm mb-7 leading-relaxed">
           Please add items to your cart before proceeding to checkout.
         </p>
         <Link
           href="/products"
-          className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-8 py-3.5 text-xs font-sans font-medium tracking-[0.16em] uppercase transition-all shadow-sm"
+          className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-8 py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors"
         >
-          Return to Catalogue
+          Return to shop
         </Link>
       </main>
     );
@@ -963,44 +963,44 @@ export default function CheckoutPage() {
         {items.map((item) => (
           <div key={`${item.id}-${item.variantId || 'default'}`} className="flex items-center gap-4">
             <div className="relative h-16 w-16 shrink-0">
-              <div className="relative h-full w-full overflow-hidden rounded-xl border border-[#D8CBBE] bg-white">
+              <div className="relative h-full w-full overflow-hidden border border-[#EBEBEB] bg-white">
                 {item.image ? (
                   <Image src={item.image} alt={item.name} fill sizes="64px" className="object-cover" />
                 ) : (
-                  <ShoppingBag className="absolute inset-0 m-auto h-5 w-5 text-[#B7A596]" />
+                  <ShoppingBag className="absolute inset-0 m-auto h-5 w-5 text-[#BDBDBD]" />
                 )}
               </div>
-              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#6D5C50] px-1.5 text-[11px] font-semibold text-[#F7F3ED]">
+              <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#121212] px-1.5 text-[11px] font-medium text-white">
                 {item.quantity}
               </span>
             </div>
             <div className="min-w-0 flex-1">
-              <span className="line-clamp-2 block font-medium text-[#382F2A]">{item.name}</span>
+              <span className="line-clamp-2 block font-normal text-[#121212]">{item.name}</span>
               {item.variantLabel && (
-                <span className="mt-0.5 line-clamp-1 block text-xs text-[#63574F]">{item.variantLabel}</span>
+                <span className="mt-0.5 line-clamp-1 block text-xs text-[#555555]">{item.variantLabel}</span>
               )}
             </div>
-            <span className="shrink-0 font-medium text-[#382F2A]">{formatMoney(item.price * item.quantity)}</span>
+            <span className="shrink-0 font-normal text-[#121212] tabular-nums">{formatMoney(item.price * item.quantity)}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-6 border-t border-[#D8CBBE] pt-5">
+      <div className="mt-6 border-t border-[#EBEBEB] pt-5">
         {appliedDiscount ? (
           <div className="flex items-center justify-between gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#2C6E49]/30 bg-[#F2F7F4] py-1.5 pl-3 pr-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-[#2C6E49]">
+            <span className="inline-flex items-center gap-2 border border-emerald-200 bg-emerald-50 py-1.5 pl-3 pr-1.5 text-xs font-medium uppercase tracking-wider text-emerald-800">
               <Tag className="h-3.5 w-3.5" />
               {appliedDiscount.code}
               <button
                 type="button"
                 aria-label={`Remove discount code ${appliedDiscount.code}`}
                 onClick={() => setAppliedDiscount(null)}
-                className="rounded-full p-1 transition-colors hover:bg-[#2C6E49]/10"
+                className="p-1 transition-colors hover:bg-emerald-100"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             </span>
-            <span className="text-xs text-[#2C6E49]">You save {formatMoney(discountAmount)}</span>
+            <span className="text-xs text-emerald-700">You save {formatMoney(discountAmount)}</span>
           </div>
         ) : (
           <>
@@ -1021,21 +1021,21 @@ export default function CheckoutPage() {
                 }}
                 placeholder="Discount code"
                 autoComplete="off"
-                className={`${INPUT_CLASS} min-w-0 flex-1 py-3 uppercase tracking-wider ${couponError ? 'border-[#A63A3A]' : 'border-[#D8CBBE]'}`}
+                className={`${INPUT_CLASS} min-w-0 flex-1 py-2.5 uppercase tracking-wider ${couponError ? 'border-red-600' : 'border-[#D4D4D4]'}`}
               />
               <button
                 type="submit"
                 disabled={!couponInput.trim() || couponLoading}
-                className="shrink-0 rounded-xl bg-[#6D5C50] px-5 text-xs font-semibold uppercase tracking-[0.14em] text-[#F7F3ED] transition-colors hover:bg-[#58483D] disabled:opacity-40"
+                className="shrink-0 bg-[#121212] px-5 text-xs font-medium tracking-wide text-white transition-colors hover:bg-[#2C2C2C] disabled:opacity-40"
               >
                 {couponLoading ? '...' : 'Apply'}
               </button>
             </form>
-            {couponError && <p className="mt-1.5 text-xs text-[#A63A3A]">{couponError}</p>}
+            {couponError && <p className="mt-1.5 text-xs text-red-700">{couponError}</p>}
             <button
               type="button"
               onClick={() => setCouponModalOpen(true)}
-              className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#8B7768] underline underline-offset-4 transition-colors hover:text-[#58483D]"
+              className="mt-3 flex items-center gap-1.5 text-xs font-medium text-[#121212] underline underline-offset-4 transition-opacity hover:opacity-70"
             >
               <Tag className="h-3.5 w-3.5" /> View available offers
             </button>
@@ -1043,25 +1043,25 @@ export default function CheckoutPage() {
         )}
       </div>
 
-      <div className="mt-5 space-y-2.5 border-t border-[#D8CBBE] pt-5">
-        <div className="flex justify-between text-[#63574F]">
+      <div className="mt-5 space-y-2.5 border-t border-[#EBEBEB] pt-5">
+        <div className="flex justify-between text-[#555555]">
           <span>Subtotal · {itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
-          <span className="font-medium text-[#382F2A]">{formatMoney(total)}</span>
+          <span className="font-medium text-[#121212] tabular-nums">{formatMoney(total)}</span>
         </div>
         {appliedDiscount && (
-          <div className="flex justify-between text-[#2C6E49]">
+          <div className="flex justify-between text-emerald-700">
             <span>Discount</span>
-            <span>-{formatMoney(discountAmount)}</span>
+            <span className="tabular-nums">-{formatMoney(discountAmount)}</span>
           </div>
         )}
-        <div className="flex justify-between text-[#63574F]">
+        <div className="flex justify-between text-[#555555]">
           <span>Shipping</span>
-          <span className={shippingQuote === null ? 'text-[#8B7E76]' : 'font-medium text-[#382F2A]'}>{shippingLabel}</span>
+          <span className={shippingQuote === null ? 'text-[#737373]' : 'font-medium text-[#121212]'}>{shippingLabel}</span>
         </div>
-        <div className="flex items-baseline justify-between pt-3 text-[#382F2A]">
-          <span className="font-heading text-xl">Total</span>
-          <span className="text-xl font-bold">
-            <span className="mr-2 text-xs font-normal text-[#8B7E76]">INR</span>
+        <div className="flex items-baseline justify-between pt-3 text-[#121212]">
+          <span className="font-sans text-lg font-medium">Total</span>
+          <span className="text-lg font-medium tabular-nums">
+            <span className="mr-2 text-xs font-normal text-[#737373]">INR</span>
             {formatMoney(orderTotal)}
           </span>
         </div>
@@ -1070,28 +1070,28 @@ export default function CheckoutPage() {
   );
 
   return (
-    <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
+    <main className="w-full bg-white text-[#121212] min-h-screen">
       {/* Mobile order summary, collapsed by default */}
-      <div className="border-b border-[#D8CBBE] bg-[#EFE7DE] lg:hidden">
+      <div className="border-b border-[#EBEBEB] bg-[#F8F8F8] lg:hidden">
         <button
           type="button"
           onClick={() => setSummaryOpen((open) => !open)}
           aria-expanded={summaryOpen}
           className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 font-sans text-sm"
         >
-          <span className="flex items-center gap-2 text-[#6D5C50]">
-            <ShoppingBag className="h-4 w-4" />
+          <span className="flex items-center gap-2 text-[#121212]">
+            <ShoppingBag className="h-4 w-4" strokeWidth={1.5} />
             {summaryOpen ? 'Hide' : 'Show'} order summary
             <ChevronDown className={`h-4 w-4 transition-transform ${summaryOpen ? 'rotate-180' : ''}`} />
           </span>
-          <span className="text-base font-bold text-[#382F2A]">{formatMoney(orderTotal)}</span>
+          <span className="text-base font-medium text-[#121212] tabular-nums">{formatMoney(orderTotal)}</span>
         </button>
         {summaryOpen && <div className="mx-auto max-w-7xl px-4 pb-6">{orderSummary}</div>}
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 pb-36 pt-6 md:px-12 md:py-12 lg:pb-16">
-        <Link href="/cart" className="mb-6 flex items-center gap-2 text-xs font-sans font-medium text-[#63574F] transition-colors hover:text-[#8B7768] md:mb-8">
-          <ArrowLeft className="w-4 h-4" /> Return to Cart
+      <div className="mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-10 pb-36 pt-6 md:py-12 lg:pb-16">
+        <Link href="/cart" className="mb-6 flex items-center gap-2 text-xs font-sans text-[#555555] transition-colors hover:text-[#121212] md:mb-8">
+          <ArrowLeft className="w-4 h-4" strokeWidth={1.5} /> Return to cart
         </Link>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-16">
@@ -1112,12 +1112,12 @@ export default function CheckoutPage() {
             {/* Contact */}
             <section>
               <div className="mb-4 flex items-baseline justify-between gap-4">
-                <h2 className="text-2xl font-heading font-normal text-[#382F2A]">Contact</h2>
+                <h2 className="text-xl font-sans font-medium text-[#121212]">Contact</h2>
                 {!user && (
                   <button
                     type="button"
                     onClick={() => setAuthModalOpen(true)}
-                    className="text-xs font-medium text-[#6D5C50] underline underline-offset-4 transition-colors hover:text-[#382F2A]"
+                    className="text-xs font-medium text-[#121212] underline underline-offset-4 transition-opacity hover:opacity-70"
                   >
                     Log in
                   </button>
@@ -1133,53 +1133,53 @@ export default function CheckoutPage() {
                 placeholder="Email"
               />
               {renderFieldError('email')}
-              <p className="mt-2 text-xs text-[#8B7E76]">Your order confirmation and invoice will be sent here.</p>
+              <p className="mt-2 text-xs text-[#555555]">Your order confirmation and invoice will be sent here.</p>
             </section>
 
             {/* Delivery */}
             <section>
-              <h2 className="mb-4 text-2xl font-heading font-normal text-[#382F2A]">Delivery</h2>
+              <h2 className="mb-4 text-xl font-sans font-medium text-[#121212]">Delivery</h2>
 
               {user && (
                 <div className="mb-5 space-y-3">
-                  {savedAddressesError ? <p className="text-sm text-[#A63A3A]">{savedAddressesError}</p> : null}
+                  {savedAddressesError ? <p className="text-sm text-red-700">{savedAddressesError}</p> : null}
 
                   {savedAddressesLoading ? (
-                    <p className="text-[#8B7E76]">Loading saved addresses...</p>
+                    <p className="text-[#555555]">Loading saved addresses...</p>
                   ) : (
                     savedAddresses.map((address) => (
                       <div
                         key={address.id}
-                        className={`flex items-start justify-between gap-4 rounded-2xl border p-4 transition-colors ${
-                          selectedAddressId === address.id ? 'border-[#8B7768] bg-[#EFE7DE]/60' : 'border-[#E5DACF] bg-white'
+                        className={`flex items-start justify-between gap-4 border p-4 transition-colors ${
+                          selectedAddressId === address.id ? 'border-[#121212] bg-[#F8F8F8]' : 'border-[#EBEBEB] bg-white'
                         }`}
                       >
                         <button type="button" onClick={() => applyAddressToForm(address)} className="flex flex-1 items-start gap-3 text-left">
                           <span
                             aria-hidden="true"
                             className={`mt-1 h-4 w-4 shrink-0 rounded-full border ${
-                              selectedAddressId === address.id ? 'border-[5px] border-[#6D5C50]' : 'border-[#B7A596]'
+                              selectedAddressId === address.id ? 'border-[5px] border-[#121212]' : 'border-[#BDBDBD]'
                             }`}
                           />
                           <span>
-                            <span className="flex flex-wrap items-center gap-2 font-medium text-[#382F2A]">
+                            <span className="flex flex-wrap items-center gap-2 font-medium text-[#121212]">
                               {getEffectiveAddressName(address.fullName, profileFullName)}
                               {address.isDefault ? (
-                                <span className="rounded-full border border-[#D8CBBE] bg-[#EFE7DE] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-[#6D5C50]">
+                                <span className="border border-[#E5E5E5] bg-white px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#121212]">
                                   Default
                                 </span>
                               ) : null}
                             </span>
-                            <span className="mt-1 block text-[#63574F]">
+                            <span className="mt-1 block text-[#555555]">
                               {address.addressLine}, {address.city}, {address.state} {address.pincode}
                             </span>
-                            <span className="block text-[#63574F]">{address.phone}</span>
+                            <span className="block text-[#555555]">{address.phone}</span>
                           </span>
                         </button>
                         <button
                           type="button"
                           onClick={() => openEditAddressModal(address)}
-                          className="text-xs font-medium text-[#6D5C50] underline underline-offset-4 hover:text-[#382F2A]"
+                          className="text-xs font-medium text-[#121212] underline underline-offset-4 hover:opacity-70"
                         >
                           Edit
                         </button>
@@ -1190,7 +1190,7 @@ export default function CheckoutPage() {
                   <button
                     type="button"
                     onClick={openAddAddressModal}
-                    className="text-xs font-medium text-[#6D5C50] underline underline-offset-4 hover:text-[#382F2A]"
+                    className="text-xs font-medium text-[#121212] underline underline-offset-4 hover:opacity-70"
                   >
                     + Save a new address to my account
                   </button>
@@ -1198,8 +1198,8 @@ export default function CheckoutPage() {
               )}
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2 rounded-xl border border-[#D8CBBE] bg-[#EFE7DE]/50 px-4 py-3.5 text-[#63574F]">
-                  Country/Region: <span className="font-medium text-[#382F2A]">India</span>
+                <div className="col-span-2 border border-[#EBEBEB] bg-[#F8F8F8] px-4 py-3 text-[#555555]">
+                  Country/Region: <span className="font-medium text-[#121212]">India</span>
                 </div>
                 <div className="col-span-2 sm:col-span-1">
                   <label htmlFor="checkout-first-name" className="sr-only">First name</label>
@@ -1254,12 +1254,12 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <label className="mt-4 flex cursor-pointer items-center gap-3 text-[#63574F]">
+              <label className="mt-4 flex cursor-pointer items-center gap-3 text-[#555555]">
                 <input
                   type="checkbox"
                   checked={saveInfo}
                   onChange={(event) => setSaveInfo(event.target.checked)}
-                  className="h-4 w-4 rounded border-[#B7A596] accent-[#6D5C50]"
+                  className="h-4 w-4 border-[#BDBDBD] accent-[#121212]"
                 />
                 Save this information for next time
               </label>
@@ -1267,18 +1267,18 @@ export default function CheckoutPage() {
 
             {/* Shipping method */}
             <section>
-              <h2 className="mb-4 text-2xl font-heading font-normal text-[#382F2A]">Shipping method</h2>
+              <h2 className="mb-4 text-xl font-sans font-medium text-[#121212]">Shipping method</h2>
               {shippingQuote === null ? (
-                <div className="rounded-xl border border-[#D8CBBE] bg-[#EFE7DE]/50 px-4 py-4 text-[#63574F]">
+                <div className="border border-[#EBEBEB] bg-[#F8F8F8] px-4 py-4 text-[#555555]">
                   Select your state to see the delivery charge. Orders of {formatMoney(shippingSettings.freeShippingThreshold)} and above ship free.
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-4 rounded-xl border border-[#8B7768] bg-[#EFE7DE]/60 px-4 py-4">
+                <div className="flex items-center justify-between gap-4 border border-[#121212] bg-[#F8F8F8] px-4 py-4">
                   <span className="flex items-center gap-3">
-                    <Truck className="h-5 w-5 shrink-0 text-[#8B7768]" />
+                    <Truck className="h-5 w-5 shrink-0 text-[#121212]" strokeWidth={1.5} />
                     <span>
-                      <span className="block font-medium text-[#382F2A]">Standard Delivery</span>
-                      <span className="block text-xs text-[#63574F]">
+                      <span className="block font-medium text-[#121212]">Standard Delivery</span>
+                      <span className="block text-xs text-[#555555]">
                         {hasFreeDeliveryItem
                           ? 'Free delivery applied for a product in your cart'
                           : shippingQuote === 0
@@ -1287,16 +1287,16 @@ export default function CheckoutPage() {
                       </span>
                     </span>
                   </span>
-                  <span className="font-semibold text-[#382F2A]">{shippingLabel}</span>
+                  <span className="font-medium text-[#121212] tabular-nums">{shippingLabel}</span>
                 </div>
               )}
             </section>
 
             {/* Payment */}
             <section>
-              <h2 className="mb-1 text-2xl font-heading font-normal text-[#382F2A]">Payment</h2>
-              <p className="mb-4 flex items-center gap-2 text-xs text-[#63574F]">
-                <Lock className="h-3.5 w-3.5 text-[#8B7768]" /> All transactions are secure and encrypted.
+              <h2 className="mb-1 text-xl font-sans font-medium text-[#121212]">Payment</h2>
+              <p className="mb-4 flex items-center gap-2 text-xs text-[#555555]">
+                <Lock className="h-3.5 w-3.5 text-[#121212]" strokeWidth={1.5} /> All transactions are secure and encrypted.
               </p>
 
               {isPaymentUnavailable && (
@@ -1307,12 +1307,12 @@ export default function CheckoutPage() {
                 </div>
               )}
 
-              <div className="overflow-hidden rounded-xl border border-[#8B7768] bg-white">
-                <div className="flex items-center justify-between gap-4 bg-[#EFE7DE]/60 px-4 py-4">
-                  <span className="font-medium text-[#382F2A]">Razorpay Secure</span>
-                  <span className="text-xs text-[#63574F]">UPI · Cards · Netbanking · Wallets</span>
+              <div className="overflow-hidden border border-[#121212] bg-white">
+                <div className="flex items-center justify-between gap-4 bg-[#F8F8F8] px-4 py-4">
+                  <span className="font-medium text-[#121212]">Razorpay Secure</span>
+                  <span className="text-xs text-[#555555]">UPI · Cards · Netbanking · Wallets</span>
                 </div>
-                <p className="border-t border-[#D8CBBE] px-4 py-4 text-xs leading-relaxed text-[#63574F]">
+                <p className="border-t border-[#EBEBEB] px-4 py-4 text-xs leading-relaxed text-[#555555]">
                   After clicking &ldquo;Pay now&rdquo;, a secure Razorpay window opens to complete your purchase.
                 </p>
               </div>
@@ -1320,25 +1320,25 @@ export default function CheckoutPage() {
               <button
                 type="submit"
                 disabled={isPayDisabled}
-                className="mt-8 hidden w-full rounded-full bg-[#6D5C50] py-4 text-xs font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] shadow-sm transition-all hover:bg-[#58483D] active:scale-[0.98] disabled:opacity-50 lg:block"
+                className="mt-8 hidden w-full bg-[#121212] py-4 text-xs sm:text-[13px] font-medium tracking-wide text-white transition-colors hover:bg-[#2C2C2C] disabled:opacity-50 lg:block"
               >
                 {payButtonLabel}
               </button>
 
-              <p className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#8B7E76]">
-                <Link href="/refund-policy" className="underline underline-offset-4 hover:text-[#382F2A]">Refund policy</Link>
-                <Link href="/shipping-policy" className="underline underline-offset-4 hover:text-[#382F2A]">Shipping policy</Link>
-                <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-[#382F2A]">Privacy policy</Link>
-                <Link href="/terms-of-service" className="underline underline-offset-4 hover:text-[#382F2A]">Terms of service</Link>
+              <p className="mt-6 flex flex-wrap gap-x-4 gap-y-1 text-xs text-[#737373]">
+                <Link href="/refund-policy" className="underline underline-offset-4 hover:text-[#121212]">Refund policy</Link>
+                <Link href="/shipping-policy" className="underline underline-offset-4 hover:text-[#121212]">Shipping policy</Link>
+                <Link href="/privacy-policy" className="underline underline-offset-4 hover:text-[#121212]">Privacy policy</Link>
+                <Link href="/terms-of-service" className="underline underline-offset-4 hover:text-[#121212]">Terms of service</Link>
               </p>
             </section>
 
             {/* Sticky pay bar on mobile */}
-            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#B7A596]/40 bg-[#F7F3ED]/95 p-4 backdrop-blur-md lg:hidden">
+            <div className="fixed inset-x-0 bottom-0 z-40 border-t border-[#EBEBEB] bg-white/95 p-4 backdrop-blur-md lg:hidden">
               <button
                 type="submit"
                 disabled={isPayDisabled}
-                className="w-full rounded-full bg-[#6D5C50] px-4 py-3.5 text-center text-xs font-semibold uppercase tracking-[0.16em] text-[#F7F3ED] shadow-sm transition-all hover:bg-[#58483D] active:scale-[0.98] disabled:opacity-50"
+                className="w-full bg-[#121212] px-4 py-3.5 text-center text-xs sm:text-[13px] font-medium tracking-wide text-white transition-colors hover:bg-[#2C2C2C] disabled:opacity-50"
               >
                 {payButtonLabel}
               </button>
@@ -1346,8 +1346,8 @@ export default function CheckoutPage() {
           </form>
 
           {/* Order summary (desktop) */}
-          <aside className="sticky top-28 hidden h-max rounded-2xl border border-[#D8CBBE] bg-[#EFE7DE] p-7 shadow-xs lg:block">
-            <h2 className="mb-4 border-b border-[#D8CBBE] pb-4 text-xl font-heading text-[#382F2A]">Order Summary</h2>
+          <aside className="sticky top-28 hidden h-max border border-[#EBEBEB] bg-[#F8F8F8] p-7 lg:block">
+            <h2 className="mb-4 border-b border-[#EBEBEB] pb-4 text-lg font-sans font-medium text-[#121212]">Order Summary</h2>
             {orderSummary}
           </aside>
         </div>

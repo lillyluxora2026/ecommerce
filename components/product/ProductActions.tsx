@@ -125,37 +125,37 @@ export function ProductActions({ product, isStickyMobile, selectedVariant }: Pro
 
         {isPreorder ? (
           <NoticeBanner tone="info">
-            <span className="font-medium text-[#382F2A]">This piece is available on preorder.</span>{' '}
+            <span className="font-medium text-[#121212]">This piece is available on preorder.</span>{' '}
             Reserve it now and we will contact you when it is ready to ship.
           </NoticeBanner>
         ) : null}
 
-        <div className="flex items-center justify-between rounded-2xl border border-[#D8CBBE] bg-white px-4 py-3 font-sans">
+        <div className="flex items-center justify-between border border-[#E5E5E5] bg-white px-4 py-2.5 font-sans">
           <div>
-            <div className="text-[11px] uppercase tracking-[0.2em] text-[#63574F]">Quantity</div>
-            <div className="mt-1 text-xs sm:text-sm text-[#63574F]">
+            <div className="text-[11px] uppercase tracking-[0.14em] text-[#555555]">Quantity</div>
+            <div className="mt-0.5 text-xs text-[#555555]">
               {effectiveStock > 0 ? `${effectiveStock} available` : allowPreorder ? 'Available on preorder' : 'Currently unavailable'}
             </div>
           </div>
-          <div className="inline-flex items-center rounded-full border border-[#D8CBBE] bg-[#F7F3ED]">
+          <div className="inline-flex items-center border border-[#D4D4D4] bg-white">
             <button
               type="button"
               onClick={decrementQuantity}
               disabled={quantity <= 1}
-              className="p-3 text-[#63574F] transition-colors hover:text-[#382F2A] disabled:cursor-not-allowed disabled:opacity-40"
+              className="p-2.5 text-[#121212] transition-colors hover:bg-[#F5F5F5] disabled:cursor-not-allowed disabled:opacity-35"
               aria-label="Decrease quantity"
             >
-              <Minus className="h-4 w-4" />
+              <Minus className="h-3.5 w-3.5" />
             </button>
-            <span className="min-w-10 text-center text-sm font-medium text-[#382F2A]">{quantity}</span>
+            <span className="min-w-9 text-center text-sm font-normal text-[#121212] tabular-nums">{quantity}</span>
             <button
               type="button"
               onClick={incrementQuantity}
               disabled={quantity >= maxSelectableQuantity}
-              className="p-3 text-[#63574F] transition-colors hover:text-[#382F2A] disabled:cursor-not-allowed disabled:opacity-40"
+              className="p-2.5 text-[#121212] transition-colors hover:bg-[#F5F5F5] disabled:cursor-not-allowed disabled:opacity-35"
               aria-label="Increase quantity"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -175,20 +175,20 @@ export function ProductActions({ product, isStickyMobile, selectedVariant }: Pro
           type="button"
           onClick={handleWishlist}
           disabled={wishlistLoading}
-          className={`w-full rounded-full py-3.5 border text-xs font-sans font-medium tracking-[0.16em] uppercase transition-colors ${isWishlisted ? 'border-[#8B7768] text-[#8B7768] bg-[#EFE7DE]' : 'border-[#B7A596] bg-white text-[#382F2A] hover:bg-[#EFE7DE]/60'} disabled:opacity-60`}
+          className={`w-full py-3.5 border text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors ${isWishlisted ? 'border-[#121212] text-[#121212] bg-[#F5F5F5]' : 'border-[#D4D4D4] bg-white text-[#121212] hover:border-[#121212]'} disabled:opacity-60`}
         >
           <span className="inline-flex items-center gap-2">
-            <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
-            {wishlistLoading ? 'Saving...' : isWishlisted ? 'Saved to Wishlist' : 'Add to Wishlist'}
+            <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} strokeWidth={1.5} />
+            {wishlistLoading ? 'Saving...' : isWishlisted ? 'Saved to wishlist' : 'Add to wishlist'}
           </span>
         </button>
       </div>
 
       {isStickyMobile && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#F7F3ED]/95 backdrop-blur-md border-t border-[#D8CBBE] z-[90] flex items-center gap-4 md:hidden animate-in slide-in-from-bottom-full duration-300">
-          <div className="flex-1">
-            <span className="block text-[11px] font-sans text-[#63574F] truncate">{product.name}</span>
-            <span className="block font-sans font-semibold text-[#382F2A]">₹{effectivePrice.toFixed(0)} × {quantity}</span>
+        <div className="fixed bottom-0 left-0 right-0 p-3.5 bg-white/95 backdrop-blur-md border-t border-[#EBEBEB] z-[90] flex items-center gap-3 md:hidden animate-in slide-in-from-bottom-full duration-300">
+          <div className="flex-1 min-w-0">
+            <span className="block text-[11px] font-sans text-[#555555] truncate">{product.name}</span>
+            <span className="block font-sans text-sm font-medium text-[#121212] tabular-nums">Rs. {effectivePrice.toLocaleString('en-IN')} × {quantity}</span>
           </div>
           <div className="flex-1">
              <AddToCartButton
@@ -197,11 +197,11 @@ export function ProductActions({ product, isStickyMobile, selectedVariant }: Pro
                quantity={quantity}
                selectedVariantId={effectiveVariantId}
                selectedVariantPrice={effectivePrice}
-	             selectedVariantStock={effectiveStock}
-	             selectedVariantAllowPreorder={selectedVariant?.allowPreorder}
-	             selectedVariantLabel={selectedVariant?.label}
+               selectedVariantStock={effectiveStock}
+               selectedVariantAllowPreorder={selectedVariant?.allowPreorder}
+               selectedVariantLabel={selectedVariant?.label}
                selectedVariantImage={selectedVariant?.image}
-	             />
+             />
           </div>
         </div>
       )}

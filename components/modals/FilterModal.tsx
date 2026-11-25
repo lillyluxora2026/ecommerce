@@ -1,15 +1,16 @@
 'use client';
 
 import { X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Category } from '@/lib/api/home';
 
 export interface ExtendedFilters {
-  priceRange: string; 
-  sizes: string[]; 
-  categoryId?: string; 
+  priceRange: string;
+  sizes: string[];
+  categoryId?: string;
   subcategoryId?: string;
   sort?: string;
+  maxPrice?: number | null;
 }
 
 interface FilterModalProps {
@@ -20,65 +21,105 @@ interface FilterModalProps {
   initialFilters?: ExtendedFilters;
 }
 
-export function FilterModal({ isOpen, onClose, onApply, categories, initialFilters }: FilterModalProps) {
+function FilterModalContent({
+  onClose,
+  onApply,
+  categories,
+  initialFilters,
+}: Omit<FilterModalProps, 'isOpen'>) {
   const [priceRange, setPriceRange] = useState<string>(initialFilters?.priceRange || 'all');
   const [selectedCategory, setSelectedCategory] = useState<string>(initialFilters?.categoryId || '');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>(initialFilters?.subcategoryId || '');
-
-  useEffect(() => {
-    if (!isOpen) return;
-    setPriceRange(initialFilters?.priceRange || 'all');
-    setSelectedCategory(initialFilters?.categoryId || '');
-    setSelectedSubcategory(initialFilters?.subcategoryId || '');
-  }, [isOpen, initialFilters]);
-
-  if (!isOpen) return null;
+  const [sort, setSort] = useState<string>(initialFilters?.sort || 'featured');
+  const [maxPrice, setMaxPrice] = useState<number | null>(initialFilters?.maxPrice ?? null);
 
   const handleApply = () => {
-    onApply({ priceRange, sizes: [], categoryId: selectedCategory, subcategoryId: selectedSubcategory });
+    onApply({
+      priceRange,
+      sizes: [],
+      categoryId: selectedCategory,
+      subcategoryId: selectedSubcategory,
+      sort,
+      maxPrice,
+    });
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-end bg-[#382F2A]/50 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-sm h-full bg-[#F7F3ED] border-l border-[#D8CBBE] flex flex-col animate-in slide-in-from-right duration-300 shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-[#D8CBBE] bg-[#EFE7DE]/60">
-          <h2 className="text-2xl font-heading font-normal italic text-[#382F2A]">Refine Collection</h2>
-          <button type="button" aria-label="Close filters" onClick={onClose} className="p-2 rounded-full text-[#63574F] hover:text-[#382F2A] hover:bg-[#D8CBBE]/40 transition-colors">
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 z-[100] flex justify-end bg-black/40 backdrop-blur-[2px] animate-in fade-in">
+      <div className="w-full max-w-sm h-full bg-white border-l border-[#EBEBEB] flex flex-col animate-in slide-in-from-right duration-300 shadow-2xl">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EBEBEB]">
+          <h2 className="text-base font-sans font-medium text-[#121212]">Filter and sort</h2>
+          <button
+            type="button"
+            aria-label="Close filters"
+            onClick={onClose}
+            className="p-2 text-[#121212] hover:bg-[#F5F5F5] transition-colors"
+          >
+            <X className="w-5 h-5" strokeWidth={1.5} />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 text-sm font-sans">
+        <div className="flex-1 overflow-y-auto p-6 space-y-7 text-sm font-sans">
+          {/* Sort Selector */}
+          <div className="space-y-3">
+            <label htmlFor="modal-sort" className="block text-xs font-medium uppercase tracking-[0.12em] text-[#555555]">
+              Sort by
+            </label>
+            <select
+              id="modal-sort"
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+              className="w-full bg-white border border-[#D4D4D4] px-3.5 py-2.5 outline-none focus:border-[#121212] text-xs font-normal text-[#121212]"
+            >
+              <option value="featured">Featured</option>
+              <option value="new">New Arrivals</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+            </select>
+          </div>
+
           {categories && categories.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#63574F]">Category</h3>
+            <div className="space-y-3">
+              <label htmlFor="modal-category" className="block text-xs font-medium uppercase tracking-[0.12em] text-[#555555]">
+                Collection
+              </label>
               <select
+                id="modal-category"
                 value={selectedCategory}
                 onChange={(e) => {
                   setSelectedCategory(e.target.value);
-                  setSelectedSubcategory(''); // Reset sub on cat change
+                  setSelectedSubcategory('');
                 }}
-                className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] text-xs font-medium text-[#382F2A]"
+                className="w-full bg-white border border-[#D4D4D4] px-3.5 py-2.5 outline-none focus:border-[#121212] text-xs font-normal text-[#121212]"
               >
-                <option value="">All Categories</option>
-                {categories.map(cat => (
-                  <option value={cat.id} key={cat.id}>{cat.name}</option>
+                <option value="">All Collections</option>
+                {categories.map((cat) => (
+                  <option value={cat.id} key={cat.id}>
+                    {cat.name}
+                  </option>
                 ))}
               </select>
 
-              {selectedCategory && categories.find(c => c.id === selectedCategory)?.subcategories?.length ? (
-                <div className="pt-2">
-                  <h3 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#63574F] mb-3">Subcategory</h3>
+              {selectedCategory && categories.find((c) => c.id === selectedCategory)?.subcategories?.length ? (
+                <div className="pt-2 space-y-2">
+                  <label htmlFor="modal-subcategory" className="block text-xs font-medium uppercase tracking-[0.12em] text-[#555555]">
+                    Subcategory
+                  </label>
                   <select
+                    id="modal-subcategory"
                     value={selectedSubcategory}
                     onChange={(e) => setSelectedSubcategory(e.target.value)}
-                    className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] text-xs font-medium text-[#382F2A]"
+                    className="w-full bg-white border border-[#D4D4D4] px-3.5 py-2.5 outline-none focus:border-[#121212] text-xs font-normal text-[#121212]"
                   >
                     <option value="">All Subcategories</option>
-                    {categories.find(c => c.id === selectedCategory)?.subcategories?.map(sub => (
-                      <option value={sub.id} key={sub.id}>{sub.name}</option>
-                    ))}
+                    {categories
+                      .find((c) => c.id === selectedCategory)
+                      ?.subcategories?.map((sub) => (
+                        <option value={sub.id} key={sub.id}>
+                          {sub.name}
+                        </option>
+                      ))}
                   </select>
                 </div>
               ) : null}
@@ -86,61 +127,96 @@ export function FilterModal({ isOpen, onClose, onApply, categories, initialFilte
           )}
 
           {/* Price Filter */}
-          <div className="space-y-4">
-            <h3 className="text-xs font-semibold tracking-[0.18em] uppercase text-[#63574F]">Price Range</h3>
-            <div className="space-y-2.5">
+          <div className="space-y-3">
+            <span className="block text-xs font-medium uppercase tracking-[0.12em] text-[#555555]">
+              Price
+            </span>
+            <div className="space-y-2">
               {[
                 { id: 'all', label: 'All Prices' },
-                { id: 'under-500', label: 'Under ₹500' },
-                { id: '500-1000', label: '₹500 – ₹1,000' },
-                { id: 'over-1000', label: 'Over ₹1,000' },
-              ].map(option => (
-                <label
-                  key={option.id}
-                  className={`flex items-center gap-3 cursor-pointer rounded-xl border px-4 py-3 transition-all ${
-                    priceRange === option.id
-                      ? 'border-[#8B7768] bg-white text-[#382F2A] font-medium'
-                      : 'border-[#D8CBBE] bg-white/60 text-[#63574F] hover:border-[#8B7768]/60'
-                  }`}
-                >
-                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${priceRange === option.id ? 'border-[#6D5C50]' : 'border-[#B7A596]'}`}>
-                    {priceRange === option.id && <div className="w-2 h-2 rounded-full bg-[#6D5C50]" />}
-                  </div>
-                  <input
-                    type="radio"
-                    className="hidden"
-                    checked={priceRange === option.id}
-                    onChange={() => setPriceRange(option.id)}
-                  />
-                  <span className="text-xs sm:text-sm">{option.label}</span>
-                </label>
-              ))}
+                { id: 'under-1799', label: 'Under Rs. 1,799' },
+                { id: '1799-2000', label: 'Rs. 1,800 – Rs. 2,000' },
+                { id: 'over-2000', label: 'Above Rs. 2,000' },
+              ].map((option) => {
+                const isSelected =
+                  option.id === 'under-1799'
+                    ? maxPrice === 1799 || priceRange === 'under-1799'
+                    : !maxPrice && priceRange === option.id;
+
+                return (
+                  <label
+                    key={option.id}
+                    className={`flex items-center gap-3 cursor-pointer border px-3.5 py-2.5 transition-colors ${
+                      isSelected
+                        ? 'border-[#121212] bg-[#F8F8F8] text-[#121212] font-medium'
+                        : 'border-[#E5E5E5] bg-white text-[#555555] hover:border-[#121212]/40'
+                    }`}
+                  >
+                    <div
+                      className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                        isSelected ? 'border-[#121212]' : 'border-[#BDBDBD]'
+                      }`}
+                    >
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-[#121212]" />}
+                    </div>
+                    <input
+                      type="radio"
+                      className="sr-only"
+                      checked={isSelected}
+                      onChange={() => {
+                        if (option.id === 'under-1799') {
+                          setMaxPrice(1799);
+                          setPriceRange('all');
+                        } else {
+                          setMaxPrice(null);
+                          setPriceRange(option.id);
+                        }
+                      }}
+                    />
+                    <span className="text-xs sm:text-sm">{option.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
-
         </div>
 
-        <div className="p-6 border-t border-[#D8CBBE] bg-white flex gap-3">
+        <div className="p-5 border-t border-[#EBEBEB] bg-white flex gap-3">
           <button
             type="button"
-            onClick={() => { 
-              setPriceRange('all'); 
+            onClick={() => {
+              setPriceRange('all');
               setSelectedCategory('');
               setSelectedSubcategory('');
+              setSort('featured');
+              setMaxPrice(null);
             }}
-            className="w-1/3 rounded-full py-3.5 text-xs font-semibold tracking-[0.14em] uppercase border border-[#B7A596] text-[#63574F] hover:bg-[#EFE7DE] transition-colors"
+            className="w-1/3 py-3 text-xs font-medium tracking-wide border border-[#D4D4D4] text-[#121212] hover:border-[#121212] transition-colors"
           >
-            Clear
+            Clear all
           </button>
           <button
             type="button"
             onClick={handleApply}
-            className="flex-1 rounded-full py-3.5 text-xs font-semibold tracking-[0.16em] uppercase bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] transition-colors shadow-sm"
+            className="flex-1 py-3 text-xs font-medium tracking-wide bg-[#121212] hover:bg-[#2C2C2C] text-white transition-colors"
           >
-            Show Results
+            Apply
           </button>
         </div>
       </div>
     </div>
+  );
+}
+
+export function FilterModal({ isOpen, onClose, onApply, categories, initialFilters }: FilterModalProps) {
+  if (!isOpen) return null;
+
+  return (
+    <FilterModalContent
+      onClose={onClose}
+      onApply={onApply}
+      categories={categories}
+      initialFilters={initialFilters}
+    />
   );
 }

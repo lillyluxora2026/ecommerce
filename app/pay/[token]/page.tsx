@@ -296,17 +296,17 @@ export default function PaymentRequestPage() {
   };
 
   return (
-    <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 md:px-12 py-10 md:py-16 space-y-8">
-        <div className="border-b border-[#B7A596]/40 pb-6">
-          <span className="text-[#8B7768] uppercase tracking-[0.24em] text-xs font-sans font-medium block mb-1">
+    <main className="w-full bg-white text-[#121212] min-h-screen">
+      <div className="max-w-4xl mx-auto px-3.5 sm:px-6 lg:px-10 py-10 md:py-16 space-y-8">
+        <div className="border-b border-[#EBEBEB] pb-6">
+          <span className="text-[#555555] uppercase tracking-[0.16em] text-xs font-sans font-medium block mb-1">
             Lily Luxora Concierge
           </span>
-          <h1 className="text-3xl md:text-4xl font-heading font-normal tracking-tight text-[#382F2A]">
+          <h1 className="text-2xl sm:text-4xl font-sans font-normal tracking-tight text-[#121212]">
             {order?.orderNumber ? `Payment for Order #${order.orderNumber}` : 'Secure Payment Request'}
           </h1>
           {order && (
-            <p className="mt-2 text-xs font-sans text-[#63574F]">
+            <p className="mt-2 text-xs font-sans text-[#555555]">
               Generated on {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
           )}
@@ -319,22 +319,22 @@ export default function PaymentRequestPage() {
         )}
 
         {loading ? (
-          <div className="rounded-2xl border border-[#B7A596]/40 bg-white px-8 py-20 text-center text-[#63574F] font-sans text-sm animate-pulse shadow-xs">
+          <div className="border border-[#EBEBEB] bg-white px-8 py-20 text-center text-[#555555] font-sans text-sm animate-pulse">
             Loading payment request...
           </div>
         ) : !order ? (
-          <div className="rounded-2xl border border-[#B7A596]/40 bg-white px-8 py-20 text-center shadow-xs">
-            <h2 className="text-xl font-heading font-normal text-[#382F2A] mb-2">Payment request unavailable</h2>
-            <p className="text-[#63574F] font-sans text-xs sm:text-sm">
+          <div className="border border-[#EBEBEB] bg-white px-8 py-20 text-center">
+            <h2 className="text-xl font-sans font-normal text-[#121212] mb-2">Payment request unavailable</h2>
+            <p className="text-[#555555] font-sans text-xs sm:text-sm">
               This link is invalid or no longer active. Please contact customer concierge for assistance.
             </p>
           </div>
         ) : (
           <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-            <div className="rounded-2xl border border-[#E5DACF] bg-white p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="border border-[#EBEBEB] bg-white p-6 sm:p-8 space-y-6">
               <div>
-                <h2 className="text-xl font-heading font-normal text-[#382F2A] mb-1">Order Summary</h2>
-                <p className="text-xs font-sans text-[#63574F]">
+                <h2 className="text-lg font-sans font-medium text-[#121212] mb-1">Order Summary</h2>
+                <p className="text-xs font-sans text-[#555555]">
                   Complete payment to confirm this piece and initiate insured dispatch.
                 </p>
               </div>
@@ -343,64 +343,64 @@ export default function PaymentRequestPage() {
                 {order.items.map((item) => (
                   <div key={item.id} className="flex items-center justify-between gap-4 text-xs sm:text-sm font-sans">
                     <div>
-                      <p className="font-medium text-[#382F2A]">{item.title || 'Demi-fine Piece'}</p>
-                      <p className="text-[11px] text-[#63574F]">Qty {item.quantity}</p>
+                      <p className="font-medium text-[#121212]">{item.title || 'Demi-fine Piece'}</p>
+                      <p className="text-[11px] text-[#555555]">Qty {item.quantity}</p>
                     </div>
-                    <span className="font-semibold text-[#382F2A]">₹{item.total_price.toFixed(0)}</span>
+                    <span className="font-medium text-[#121212] tabular-nums">Rs. {item.total_price.toFixed(0)}</span>
                   </div>
                 ))}
               </div>
 
-              <div className="border-t border-[#B7A596]/30 pt-4 flex items-center justify-between text-base sm:text-lg font-heading text-[#382F2A]">
+              <div className="border-t border-[#EBEBEB] pt-4 flex items-center justify-between text-base sm:text-lg font-sans text-[#121212]">
                 <span>Total Due</span>
-                <span className="font-bold font-sans text-[#382F2A]">₹{order.grandTotal.toFixed(0)}</span>
+                <span className="font-medium text-[#121212] tabular-nums">Rs. {order.grandTotal.toFixed(0)}</span>
               </div>
             </div>
 
             {!order.shippingAddress && (
-              <div className="rounded-2xl border border-[#E5DACF] bg-white p-6 sm:p-8 space-y-4 col-span-1 lg:col-span-2 order-last lg:order-none shadow-xs">
+              <div className="border border-[#EBEBEB] bg-white p-6 sm:p-8 space-y-4 col-span-1 lg:col-span-2 order-last lg:order-none">
                 <div>
-                  <h2 className="text-xl font-heading font-normal text-[#382F2A] mb-1">Shipping Details</h2>
-                  <p className="text-xs font-sans text-[#63574F]">Please provide your destination address for insured Pan-India delivery.</p>
+                  <h2 className="text-lg font-sans font-medium text-[#121212] mb-1">Shipping Details</h2>
+                  <p className="text-xs font-sans text-[#555555]">Please provide your destination address for insured Pan-India delivery.</p>
                 </div>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 text-xs sm:text-sm font-sans pt-2">
-                  <input name="firstName" value={address.firstName} onChange={handleAddressChange} placeholder="First Name" className="col-span-1 bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl p-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]" />
-                  <input name="lastName" value={address.lastName} onChange={handleAddressChange} placeholder="Last Name" className="col-span-1 bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl p-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]" />
-                  <input name="addressLine" value={address.addressLine} onChange={handleAddressChange} placeholder="Street Address" className="col-span-2 bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl p-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]" />
-                  <input name="apartment" value={address.apartment} onChange={handleAddressChange} placeholder="Apartment, suite, landmark (optional)" className="col-span-2 bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl p-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]" />
-                  <input name="city" value={address.city} onChange={handleAddressChange} placeholder="City" className="col-span-2 md:col-span-1 bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl p-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]" />
+                  <input name="firstName" value={address.firstName} onChange={handleAddressChange} placeholder="First Name" className="col-span-1 bg-white border border-[#D4D4D4] p-3 outline-none focus:border-[#121212] transition-colors text-[#121212]" />
+                  <input name="lastName" value={address.lastName} onChange={handleAddressChange} placeholder="Last Name" className="col-span-1 bg-white border border-[#D4D4D4] p-3 outline-none focus:border-[#121212] transition-colors text-[#121212]" />
+                  <input name="addressLine" value={address.addressLine} onChange={handleAddressChange} placeholder="Street Address" className="col-span-2 bg-white border border-[#D4D4D4] p-3 outline-none focus:border-[#121212] transition-colors text-[#121212]" />
+                  <input name="apartment" value={address.apartment} onChange={handleAddressChange} placeholder="Apartment, suite, landmark (optional)" className="col-span-2 bg-white border border-[#D4D4D4] p-3 outline-none focus:border-[#121212] transition-colors text-[#121212]" />
+                  <input name="city" value={address.city} onChange={handleAddressChange} placeholder="City" className="col-span-2 md:col-span-1 bg-white border border-[#D4D4D4] p-3 outline-none focus:border-[#121212] transition-colors text-[#121212]" />
                   <select
                     name="state"
                     value={address.state}
                     onChange={handleAddressChange}
-                    className="col-span-2 md:col-span-1 bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl p-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]"
+                    className="col-span-2 md:col-span-1 bg-white border border-[#D4D4D4] p-3 outline-none focus:border-[#121212] transition-colors text-[#121212]"
                   >
-                    <option value="" className="text-[#8B7E76]">Select State</option>
+                    <option value="" className="text-[#737373]">Select State</option>
                     {INDIA_STATES.map((state) => (
-                      <option key={state} value={state} className="text-[#382F2A]">
+                      <option key={state} value={state} className="text-[#121212]">
                         {state}
                       </option>
                     ))}
                   </select>
-                  <input name="pincode" value={address.pincode} onChange={handleAddressChange} placeholder="PIN Code" className="col-span-2 bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl p-3 outline-none focus:border-[#8B7768] transition-colors text-[#382F2A]" />
+                  <input name="pincode" value={address.pincode} onChange={handleAddressChange} placeholder="PIN Code" className="col-span-2 bg-white border border-[#D4D4D4] p-3 outline-none focus:border-[#121212] transition-colors text-[#121212]" />
                 </div>
               </div>
             )}
 
-            <div className="rounded-2xl border border-[#D8CBBE] bg-[#EFE7DE] p-6 sm:p-8 h-max space-y-5 shadow-xs">
+            <div className="border border-[#EBEBEB] bg-[#F8F8F8] p-6 sm:p-8 h-max space-y-5">
               <div>
-                <h2 className="text-xl font-heading font-normal text-[#382F2A] mb-1">Razorpay Checkout</h2>
-                <p className="text-xs font-sans text-[#63574F] flex items-center gap-1.5">
-                  <Lock className="h-3.5 w-3.5 text-[#8B7768]" />
+                <h2 className="text-lg font-sans font-medium text-[#121212] mb-1">Razorpay Checkout</h2>
+                <p className="text-xs font-sans text-[#555555] flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-[#121212]" strokeWidth={1.5} />
                   256-bit encrypted UPI &amp; Cards
                 </p>
               </div>
 
-              <div className="space-y-1.5 text-xs font-sans text-[#63574F]">
-                {order.guestName && <p>Customer: <strong className="text-[#382F2A]">{order.guestName}</strong></p>}
+              <div className="space-y-1.5 text-xs font-sans text-[#555555]">
+                {order.guestName && <p>Customer: <strong className="text-[#121212]">{order.guestName}</strong></p>}
                 {order.guestEmail && <p>Email: {order.guestEmail}</p>}
                 {order.guestPhone && <p>Phone: {order.guestPhone}</p>}
-                <p>Status: <span className="uppercase font-semibold text-[#8B7768]">{order.financialStatus || 'pending'}</span></p>
+                <p>Status: <span className="uppercase font-medium text-[#121212]">{order.financialStatus || 'pending'}</span></p>
               </div>
 
               <button
@@ -408,9 +408,9 @@ export default function PaymentRequestPage() {
                 onClick={handlePayNow}
                 disabled={submitting || order.financialStatus === 'paid' || !isAddressValid}
                 title={!isAddressValid ? "Please fill out your shipping address" : undefined}
-                className="w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] py-3.5 px-6 font-sans text-xs font-semibold tracking-[0.16em] uppercase transition-all shadow-sm active:scale-[0.99] disabled:opacity-50"
+                className="w-full bg-[#121212] hover:bg-[#2C2C2C] text-white py-3.5 px-6 font-sans text-xs sm:text-[13px] font-medium tracking-wide transition-colors disabled:opacity-50"
               >
-                {order.financialStatus === 'paid' ? 'Already Paid' : submitting ? 'Opening Payment...' : 'Complete Payment Now'}
+                {order.financialStatus === 'paid' ? 'Already Paid' : submitting ? 'Opening Payment...' : 'Complete payment now'}
               </button>
             </div>
           </div>

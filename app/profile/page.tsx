@@ -85,21 +85,21 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
-        <span className="text-[#8B7768] uppercase tracking-[0.24em] text-xs font-sans font-medium mb-3 block">
+      <main className="w-full bg-white text-[#121212] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
+        <span className="text-[#555555] uppercase tracking-[0.16em] text-xs font-sans font-medium mb-2.5 block">
           Customer Account
         </span>
-        <h1 className="text-3xl md:text-5xl font-heading font-normal tracking-tight text-[#382F2A] mb-4">
+        <h1 className="text-2xl sm:text-4xl font-sans font-normal tracking-tight text-[#121212] mb-3">
           Access Your Profile
         </h1>
-        <p className="text-xs sm:text-sm font-sans text-[#63574F] max-w-sm mb-8 leading-relaxed">
+        <p className="text-xs sm:text-sm font-sans text-[#555555] max-w-sm mb-7 leading-relaxed">
           Please log in to manage your saved addresses and view order status.
         </p>
         <button
           onClick={() => setAuthModalOpen(true)}
-          className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-8 py-3.5 text-xs font-sans font-medium tracking-[0.16em] uppercase transition-all shadow-sm"
+          className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-8 py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors"
         >
-          Sign In
+          Sign in
         </button>
       </main>
     );
@@ -223,27 +223,27 @@ export default function ProfilePage() {
 
   return (
     <>
-      <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
-        <div className="max-w-7xl mx-auto px-4 md:px-12 py-10 md:py-16">
-          <div className="border-b border-[#B7A596]/40 pb-6 mb-8">
-            <span className="text-[#8B7768] uppercase tracking-[0.22em] text-xs font-sans font-medium block mb-1">
+      <main className="w-full bg-white text-[#121212] min-h-screen">
+        <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 py-8 sm:py-12">
+          <div className="border-b border-[#EBEBEB] pb-5 mb-8">
+            <span className="text-[#555555] uppercase tracking-[0.16em] text-xs font-sans font-medium block mb-1">
               Account Overview
             </span>
-            <h1 className="text-3xl md:text-4xl font-heading font-normal tracking-tight text-[#382F2A]">
+            <h1 className="text-2xl sm:text-3xl font-sans font-normal tracking-tight text-[#121212]">
               My Profile
             </h1>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
-            <aside className="col-span-1 space-y-3 font-sans text-xs sm:text-sm">
-              <Link href="/profile" className="block text-[#8B7768] font-semibold bg-[#EFE7DE] px-4 py-2.5 rounded-xl border border-[#D8CBBE]">Dashboard</Link>
-              <Link href="/orders" className="block text-[#63574F] hover:text-[#382F2A] px-4 py-2.5 rounded-xl transition-colors">Order History</Link>
-              <Link href="/wishlist" className="block text-[#63574F] hover:text-[#382F2A] px-4 py-2.5 rounded-xl transition-colors">Wishlist</Link>
+            <aside className="col-span-1 space-y-2 font-sans text-xs sm:text-sm">
+              <Link href="/profile" className="block text-[#121212] font-medium bg-[#F4F4F4] px-4 py-2.5 border border-[#121212]">Dashboard</Link>
+              <Link href="/orders" className="block text-[#555555] hover:text-[#121212] px-4 py-2.5 transition-colors">Order History</Link>
+              <Link href="/wishlist" className="block text-[#555555] hover:text-[#121212] px-4 py-2.5 transition-colors">Wishlist</Link>
               <button
                 type="button"
                 onClick={handleSignOut}
                 disabled={signingOut}
-                className="block text-[#8B7E76] hover:text-red-600 transition-colors mt-6 pt-6 border-t border-[#B7A596]/30 w-full text-left px-4 disabled:opacity-50"
+                className="block text-[#737373] hover:text-red-600 transition-colors mt-6 pt-6 border-t border-[#EBEBEB] w-full text-left px-4 disabled:opacity-50"
               >
                 {signingOut ? 'Signing Out...' : 'Sign Out'}
               </button>
@@ -251,55 +251,55 @@ export default function ProfilePage() {
             </aside>
 
             <section className="col-span-1 md:col-span-3 space-y-8">
-              <div className="bg-white p-6 sm:p-8 rounded-2xl border border-[#E5DACF] shadow-xs">
-                <h2 className="text-xl font-heading font-normal text-[#382F2A] mb-6">Account Details</h2>
+              <div className="bg-white p-6 sm:p-8 border border-[#EBEBEB]">
+                <h2 className="text-lg font-sans font-medium text-[#121212] mb-6">Account Details</h2>
                 {isEditingProfile ? (
-                  <form onSubmit={handleSaveProfile} className="space-y-5">
-                    {profileError ? <p className="text-xs text-red-500">{profileError}</p> : null}
+                  <form onSubmit={handleSaveProfile} className="space-y-4">
+                    {profileError ? <p className="text-xs text-red-600">{profileError}</p> : null}
                     <div className="space-y-1.5">
-                      <label className="text-[11px] uppercase tracking-wider text-[#63574F] font-sans">Full Name</label>
+                      <label className="text-xs text-[#555555] font-sans">Full Name</label>
                       <input
                         type="text"
                         value={draftFullName}
                         onChange={(e) => setDraftFullName(e.target.value)}
                         autoComplete="name"
                         required
-                        className="w-full bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-sans text-[#382F2A] outline-none focus:border-[#8B7768] transition-colors"
+                        className="w-full bg-white border border-[#D4D4D4] px-3.5 py-2.5 text-xs sm:text-sm font-sans text-[#121212] outline-none focus:border-[#121212] transition-colors"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] uppercase tracking-wider text-[#63574F] font-sans">Email</label>
+                      <label className="text-xs text-[#555555] font-sans">Email</label>
                       <input
                         type="email"
                         value={user.email || ''}
                         disabled
-                        className="w-full bg-[#F7F3ED]/50 border border-[#B7A596]/30 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-sans text-[#8B7E76]"
+                        className="w-full bg-[#F8F8F8] border border-[#EBEBEB] px-3.5 py-2.5 text-xs sm:text-sm font-sans text-[#555555]"
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <label className="text-[11px] uppercase tracking-wider text-[#63574F] font-sans">Phone Number</label>
+                      <label className="text-xs text-[#555555] font-sans">Phone Number</label>
                       <input
                         type="tel"
                         value={draftPhone}
                         onChange={(e) => setDraftPhone(e.target.value)}
                         autoComplete="tel"
                         required
-                        className="w-full bg-[#F7F3ED] border border-[#B7A596]/60 rounded-xl px-4 py-2.5 text-xs sm:text-sm font-sans text-[#382F2A] outline-none focus:border-[#8B7768] transition-colors"
+                        className="w-full bg-white border border-[#D4D4D4] px-3.5 py-2.5 text-xs sm:text-sm font-sans text-[#121212] outline-none focus:border-[#121212] transition-colors"
                       />
                     </div>
                     <div className="flex gap-3 pt-2">
                       <button
                         type="submit"
                         disabled={profileLoading || !draftFullName.trim() || !draftPhone.trim()}
-                        className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-6 py-2.5 text-xs font-sans font-medium tracking-wide transition-colors disabled:opacity-50 shadow-sm"
+                        className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-6 py-2.5 text-xs font-sans font-medium tracking-wide transition-colors disabled:opacity-50"
                       >
-                        {profileLoading ? 'Saving...' : 'Save Profile'}
+                        {profileLoading ? 'Saving...' : 'Save profile'}
                       </button>
                       <button
                         type="button"
                         onClick={handleCancelEditProfile}
                         disabled={profileLoading}
-                        className="rounded-full border border-[#B7A596] hover:border-[#8B7768] px-6 py-2.5 text-xs font-sans font-medium text-[#63574F] transition-colors disabled:opacity-50"
+                        className="border border-[#D4D4D4] hover:border-[#121212] px-6 py-2.5 text-xs font-sans font-medium text-[#121212] transition-colors disabled:opacity-50"
                       >
                         Cancel
                       </button>
@@ -307,71 +307,71 @@ export default function ProfilePage() {
                   </form>
               ) : (
                 <>
-                  {profileSuccess ? <p className="mb-4 text-sm text-[#2C6E49] font-sans">{profileSuccess}</p> : null}
-                  {profileError ? <p className="mb-4 text-sm text-[#A63A3A] font-sans">{profileError}</p> : null}
-                  <div className="space-y-4 text-sm font-sans text-[#382F2A]">
+                  {profileSuccess ? <p className="mb-4 text-sm text-emerald-700 font-sans">{profileSuccess}</p> : null}
+                  {profileError ? <p className="mb-4 text-sm text-red-700 font-sans">{profileError}</p> : null}
+                  <div className="space-y-3.5 text-sm font-sans text-[#121212]">
                     <div>
-                      <span className="text-[#8B7E76] w-32 inline-block">Name:</span>
+                      <span className="text-[#555555] w-32 inline-block">Name:</span>
                       <span>{fullName || 'Not provided'}</span>
                     </div>
                     <div>
-                      <span className="text-[#8B7E76] w-32 inline-block">Email:</span>
+                      <span className="text-[#555555] w-32 inline-block">Email:</span>
                       <span>{user.email || 'Not provided'}</span>
                     </div>
                     <div>
-                      <span className="text-[#8B7E76] w-32 inline-block">Phone:</span>
+                      <span className="text-[#555555] w-32 inline-block">Phone:</span>
                       <span>{phone || 'Not provided'}</span>
                     </div>
                     <div>
-                      <span className="text-[#8B7E76] w-32 inline-block">Login Method:</span>
+                      <span className="text-[#555555] w-32 inline-block">Login Method:</span>
                       <span>Email OTP</span>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={handleStartEditProfile}
-                    className="mt-8 rounded-full border border-[#B7A596] bg-[#F7F3ED] px-6 py-2.5 text-xs font-sans font-medium text-[#382F2A] hover:border-[#6D5C50] hover:bg-[#6D5C50] hover:text-[#F7F3ED] transition-colors"
+                    className="mt-7 border border-[#121212] bg-white px-6 py-2.5 text-xs font-sans font-medium text-[#121212] hover:bg-[#121212] hover:text-white transition-colors"
                   >
-                    Edit Profile
+                    Edit profile
                   </button>
                 </>
               )}
             </div>
 
-            <div className="rounded-3xl bg-white p-6 md:p-8 border border-[#E5DACF] shadow-xs">
+            <div className="bg-white p-6 md:p-8 border border-[#EBEBEB]">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
                 <div>
-                  <h2 className="text-2xl font-heading font-normal text-[#382F2A]">Saved Addresses</h2>
-                  <p className="text-sm font-sans text-[#63574F] mt-2">
+                  <h2 className="text-lg font-sans font-medium text-[#121212]">Saved Addresses</h2>
+                  <p className="text-xs sm:text-sm font-sans text-[#555555] mt-1">
                     Use the same address book on checkout for faster ordering.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={openAddAddress}
-                  className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-6 py-2.5 text-xs font-sans font-medium transition-colors shadow-xs"
+                  className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-5 py-2.5 text-xs font-sans font-medium transition-colors"
                 >
-                  Add Address +
+                  Add address +
                 </button>
               </div>
 
-              {addressSuccess ? <p className="mb-4 text-sm text-[#2C6E49] font-sans">{addressSuccess}</p> : null}
-              {addressesError ? <p className="mb-4 text-sm text-[#A63A3A] font-sans">{addressesError}</p> : null}
+              {addressSuccess ? <p className="mb-4 text-sm text-emerald-700 font-sans">{addressSuccess}</p> : null}
+              {addressesError ? <p className="mb-4 text-sm text-red-700 font-sans">{addressesError}</p> : null}
 
               {addressesLoading ? (
-                <p className="text-[#8B7E76] text-sm font-sans">Loading saved addresses...</p>
+                <p className="text-[#555555] text-sm font-sans">Loading saved addresses...</p>
               ) : addresses.length === 0 ? (
-                <p className="text-[#8B7E76] text-sm font-sans">You have no saved addresses yet.</p>
+                <p className="text-[#555555] text-sm font-sans">You have no saved addresses yet.</p>
               ) : (
                 <div className="grid gap-4">
                   {addresses.map((address) => (
-                    <div key={address.id} className="rounded-2xl border border-[#E5DACF] bg-[#F7F3ED]/60 p-5 text-sm font-sans">
+                    <div key={address.id} className="border border-[#EBEBEB] bg-[#FAFAFA] p-5 text-sm font-sans">
                       <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-1 text-[#63574F]">
+                        <div className="space-y-1 text-[#555555]">
                           <div className="flex items-center gap-3">
-                            <p className="font-medium text-[#382F2A]">{address.fullName}</p>
+                            <p className="font-medium text-[#121212]">{address.fullName}</p>
                             {address.isDefault ? (
-                              <span className="rounded-full bg-[#EFE7DE] border border-[#D8CBBE] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-[0.2em] text-[#6D5C50]">
+                              <span className="bg-[#121212] px-2.5 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white rounded-full">
                                 Default
                               </span>
                             ) : null}
@@ -383,7 +383,7 @@ export default function ProfilePage() {
                         <button
                           type="button"
                           onClick={() => openEditAddress(address)}
-                          className="rounded-full border border-[#B7A596] bg-white px-4 py-1.5 text-xs font-medium text-[#382F2A] hover:border-[#6D5C50] hover:bg-[#6D5C50] hover:text-[#F7F3ED] transition-colors"
+                          className="border border-[#D4D4D4] bg-white px-4 py-1.5 text-xs font-medium text-[#121212] hover:border-[#121212] transition-colors"
                         >
                           Edit
                         </button>

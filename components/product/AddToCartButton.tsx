@@ -159,23 +159,23 @@ export function AddToCartButton({
         </NoticeBanner>
       )}
 
-      <button 
+      <button
         type="button"
         onClick={handleAction}
         disabled={isSoldOut || (isAdding && !isPreorder)}
-        className={`w-full rounded-full py-4 text-xs font-sans font-semibold tracking-[0.16em] uppercase transition-all flex items-center justify-center gap-3 shadow-sm
-          ${isSoldOut 
-            ? 'bg-[#D8CBBE]/60 text-[#8B7E76] cursor-not-allowed border border-[#B7A596]/40' 
-            : isPreorder 
-              ? 'bg-[#C5A574] text-[#382F2A] hover:opacity-95 active:scale-[0.99]'
+        className={`w-full py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors flex items-center justify-center gap-2.5
+          ${isSoldOut
+            ? 'bg-[#F3F3F3] text-[#737373] cursor-not-allowed border border-[#E5E5E5]'
+            : isPreorder
+              ? 'bg-[#121212] text-white hover:bg-[#2C2C2C]'
               : added
-                ? 'bg-[#382F2A] text-[#F7F3ED]'
-                : 'bg-[#6D5C50] text-[#F7F3ED] hover:bg-[#58483D] active:scale-[0.99]'
+                ? 'bg-[#2C2C2C] text-white'
+                : 'bg-[#121212] text-white hover:bg-[#2C2C2C]'
           }
         `}
       >
-        <ShoppingBag className="w-4 h-4" />
-        {isSoldOut ? 'Sold Out' : isPreorder ? 'Reserve Preorder' : added ? 'Added to Bag' : isAdding ? 'Adding...' : 'Add to Bag'}
+        <ShoppingBag className="w-4 h-4" strokeWidth={1.5} />
+        {isSoldOut ? 'Sold out' : isPreorder ? 'Reserve preorder' : added ? 'Added to bag' : isAdding ? 'Adding...' : 'Add to bag'}
       </button>
 
       <PreorderModal 

@@ -1,11 +1,10 @@
 'use client';
 
-import { Suspense, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import type { Product, Category } from '@/lib/api/home';
 import { ProductCard } from '@/components/product/ProductCard';
 import { ProductFilters } from '@/components/product/ProductFilters';
 import type { ExtendedFilters } from '@/components/modals/FilterModal';
-import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Search, X } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
@@ -13,12 +12,11 @@ const DEFAULT_FILTERS: ExtendedFilters = {
   priceRange: 'all',
   sizes: [],
   sort: 'featured',
+  maxPrice: null,
 };
 
 const PRODUCTS_PER_PAGE = 12;
 
-// ── Search normalization ──────────────────────────────────────
-// "anti tarnish", "antitarnish", "anti-tarnish" all match the same products
 function normalizeForSearch(value: string) {
   return value
     .toLowerCase()
@@ -53,7 +51,6 @@ function matchesSelectedSizes(product: Product, sizes: string[]) {
   );
 }
 
-// ── Pagination component ──────────────────────────────────────
 function Pagination({
   currentPage,
   totalPages,
@@ -65,7 +62,6 @@ function Pagination({
 }) {
   if (totalPages <= 1) return null;
 
-  // Build visible page numbers with ellipsis
   function getPageNumbers() {
     const pages: (number | '...')[] = [];
     if (totalPages <= 7) {
@@ -85,32 +81,24 @@ function Pagination({
   const pages = getPageNumbers();
 
   return (
-    <div className="mt-16 flex flex-col items-center gap-4">
-      {/* Page info text */}
-      <p className="text-xs uppercase tracking-[0.24em] text-[#8B7E76] font-sans">
-        Page {currentPage} of {totalPages}
-      </p>
-
-      {/* Controls row */}
+    <div className="mt-14 flex flex-col items-center gap-4">
       <div className="flex items-center gap-2">
-        {/* Prev */}
         <button
           type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
           aria-label="Previous page"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-[#B7A596]/40 bg-white text-[#382F2A] transition-all hover:border-[#8B7768] hover:text-[#8B7768] disabled:cursor-not-allowed disabled:opacity-30 shadow-xs"
+          className="flex h-9 w-9 items-center justify-center border border-[#E5E5E5] bg-white text-[#121212] transition-colors hover:border-[#121212] disabled:cursor-not-allowed disabled:opacity-30"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-4 w-4" strokeWidth={1.5} />
         </button>
 
-        {/* Page numbers */}
         <div className="flex items-center gap-1.5">
           {pages.map((p, i) =>
             p === '...' ? (
               <span
                 key={`ellipsis-${i}`}
-                className="flex h-10 w-10 items-center justify-center text-sm text-[#8B7E76]"
+                className="flex h-9 w-9 items-center justify-center text-sm text-[#737373]"
               >
                 …
               </span>
@@ -121,10 +109,10 @@ function Pagination({
                 onClick={() => onPageChange(p as number)}
                 aria-label={`Go to page ${p}`}
                 aria-current={p === currentPage ? 'page' : undefined}
-                className={`flex h-10 w-10 items-center justify-center rounded-full border text-xs font-sans font-medium transition-all shadow-xs ${
+                className={`flex h-9 w-9 items-center justify-center border text-xs font-sans transition-colors tabular-nums ${
                   p === currentPage
-                    ? 'border-[#6D5C50] bg-[#6D5C50] text-[#F7F3ED]'
-                    : 'border-[#B7A596]/40 bg-white text-[#382F2A] hover:border-[#8B7768] hover:text-[#8B7768]'
+                    ? 'border-[#121212] bg-[#121212] text-white'
+                    : 'border-[#E5E5E5] bg-white text-[#121212] hover:border-[#121212]'
                 }`}
               >
                 {p}
@@ -133,43 +121,20 @@ function Pagination({
           )}
         </div>
 
-        {/* Next */}
         <button
           type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
           aria-label="Next page"
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-[#B7A596]/40 bg-white text-[#382F2A] transition-all hover:border-[#8B7768] hover:text-[#8B7768] disabled:cursor-not-allowed disabled:opacity-30 shadow-xs"
+          className="flex h-9 w-9 items-center justify-center border border-[#E5E5E5] bg-white text-[#121212] transition-colors hover:border-[#121212] disabled:cursor-not-allowed disabled:opacity-30"
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-4 w-4" strokeWidth={1.5} />
         </button>
       </div>
-
-      {/* Jump to page — only show if more than 5 pages */}
-      {totalPages > 5 && (
-        <div className="flex items-center gap-2 text-xs text-[#63574F] font-sans">
-          <span className="uppercase tracking-[0.18em]">Go to page</span>
-          <input
-            type="number"
-            min={1}
-            max={totalPages}
-            defaultValue={currentPage}
-            key={currentPage}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                const val = Math.min(totalPages, Math.max(1, Number((e.target as HTMLInputElement).value)));
-                onPageChange(val);
-              }
-            }}
-            className="w-14 rounded-full border border-[#D8CBBE] bg-white px-3 py-1.5 text-center text-xs text-[#382F2A] outline-none focus:border-[#8B7768]"
-          />
-        </div>
-      )}
     </div>
   );
 }
 
-// ── Main page ──────────────────────────────────────────────────
 export function ProductsClient({
   initialProducts,
   initialCategories,
@@ -183,12 +148,12 @@ export function ProductsClient({
 
   const [products] = useState<Product[]>(initialProducts);
   const [categories] = useState<Category[]>(initialCategories);
-  const [loading] = useState(false);
   const [searchText, setSearchText] = useState(() => searchParams.get('search') || '');
   const [filters, setFilters] = useState<ExtendedFilters>(() => {
     const categorySlugParam = searchParams.get('category')?.trim().toLowerCase() || '';
     const subcategorySlugParam = searchParams.get('subcategory')?.trim().toLowerCase() || '';
     const sortParam = searchParams.get('sort')?.trim() || 'featured';
+    const maxPriceParam = Number(searchParams.get('maxPrice'));
 
     const matchedCategory = categorySlugParam
       ? initialCategories.find(
@@ -208,6 +173,7 @@ export function ProductsClient({
       categoryId: matchedCategory?.id || '',
       subcategoryId: matchedSubcategory?.id || '',
       sort: sortParam,
+      maxPrice: Number.isFinite(maxPriceParam) && maxPriceParam > 0 ? maxPriceParam : null,
     };
   });
   const [filtersResetKey, setFiltersResetKey] = useState(0);
@@ -219,7 +185,6 @@ export function ProductsClient({
     [categories, filters.categoryId]
   );
 
-  // Sync URL params
   function updateParams(updates: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString());
     for (const [key, value] of Object.entries(updates)) {
@@ -233,9 +198,6 @@ export function ProductsClient({
     router.replace(nextUrl, { scroll: false });
   }
 
-  // Data is fetched on the server now.
-
-  // Track Search events
   useEffect(() => {
     const query = searchParams.get('search');
     if (query && query.trim().length >= 2) {
@@ -243,7 +205,7 @@ export function ProductsClient({
         const fbq = (window as Window & { fbq?: (event: string, action: string, params?: object) => void }).fbq;
         if (fbq) {
           fbq('track', 'Search', {
-            search_string: query.trim()
+            search_string: query.trim(),
           });
         }
       }
@@ -271,9 +233,16 @@ export function ProductsClient({
       result = result.filter((p) => matchesSelectedSizes(p, filters.sizes));
     }
 
+    if (filters.maxPrice && filters.maxPrice > 0) {
+      result = result.filter((p) => p.price <= filters.maxPrice!);
+    }
+
     if (filters.priceRange === 'under-500') result = result.filter((p) => p.price < 500);
     else if (filters.priceRange === '500-1000') result = result.filter((p) => p.price >= 500 && p.price <= 1000);
     else if (filters.priceRange === 'over-1000') result = result.filter((p) => p.price > 1000);
+    else if (filters.priceRange === 'under-1799') result = result.filter((p) => p.price <= 1799);
+    else if (filters.priceRange === '1799-2000') result = result.filter((p) => p.price > 1799 && p.price <= 2000);
+    else if (filters.priceRange === 'over-2000') result = result.filter((p) => p.price > 2000);
 
     if (filters.sort === 'price-asc') result.sort((a, b) => a.price - b.price);
     else if (filters.sort === 'price-desc') result.sort((a, b) => b.price - a.price);
@@ -281,7 +250,6 @@ export function ProductsClient({
     return result;
   }, [deferredSearchText, filters, products]);
 
-  // Pagination derived values
   const totalPages = Math.max(1, Math.ceil(filtered.length / PRODUCTS_PER_PAGE));
   const safePage = Math.min(currentPage, totalPages);
   const pageStart = (safePage - 1) * PRODUCTS_PER_PAGE;
@@ -292,7 +260,6 @@ export function ProductsClient({
     const next = Math.min(totalPages, Math.max(1, page));
     setCurrentPage(next);
     updateParams({ page: next === 1 ? null : String(next) });
-    // Smooth scroll to top of product grid
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -303,6 +270,7 @@ export function ProductsClient({
       category: cat?.slug || null,
       subcategory: sub?.slug || null,
       sort: nextFilters.sort && nextFilters.sort !== 'featured' ? nextFilters.sort : null,
+      maxPrice: nextFilters.maxPrice ? String(nextFilters.maxPrice) : null,
       page: null,
     });
   };
@@ -335,176 +303,165 @@ export function ProductsClient({
   };
 
   const handleClearAll = () => {
-    setFilters({ ...DEFAULT_FILTERS, categoryId: '', subcategoryId: '' });
+    setFilters({ ...DEFAULT_FILTERS, categoryId: '', subcategoryId: '', maxPrice: null });
     setSearchText('');
     setFiltersResetKey((k) => k + 1);
     setCurrentPage(1);
-    updateParams({ search: null, category: null, subcategory: null, sort: null, page: null });
+    updateParams({ search: null, category: null, subcategory: null, sort: null, maxPrice: null, page: null });
   };
 
+  const pageHeading = filters.maxPrice
+    ? `Under Rs. ${filters.maxPrice.toLocaleString('en-IN')}`
+    : activeCategoryObj
+      ? activeCategoryObj.name
+      : 'All Jewellery';
+
   return (
-    <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 md:px-12 py-10 md:py-16">
-        {/* Breadcrumb */}
-        <nav className="mb-6 flex items-center gap-2 text-xs font-sans text-[#63574F]">
-          <Link href="/" className="transition-colors hover:text-[#8B7768]">Home</Link>
-          <ChevronRight className="w-3 h-3 text-[#B7A596]" />
-          <span className="text-[#382F2A] font-medium">All Jewellery</span>
-        </nav>
+    <main className="w-full bg-white text-[#121212] min-h-screen">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 py-6 sm:py-10">
+        {/* Minimal Header */}
+        <div className="mb-5">
+          <h1 className="text-2xl sm:text-3xl font-sans font-normal tracking-[-0.01em] text-[#121212]">
+            {pageHeading}
+          </h1>
+        </div>
 
-        {/* Header + filters */}
-        <div className="mb-8 flex flex-col gap-5 border-b border-[#B7A596]/40 pb-8">
-          <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-            <div>
-              <span className="text-[#8B7768] text-xs font-sans uppercase tracking-[0.22em] font-medium block mb-1">
-                {activeCategoryObj ? `${activeCategoryObj.name} Collection` : 'The Complete Catalogue'}
-              </span>
-              <h1 className="text-3xl md:text-5xl font-heading font-normal tracking-tight text-[#382F2A]">
-                {activeCategoryObj ? activeCategoryObj.name : 'All Jewellery'}
-              </h1>
-              <p className="mt-2 text-xs sm:text-sm font-sans text-[#63574F]">
-                {loading ? (
-                  <span className="inline-block h-4 w-48 animate-pulse rounded bg-white" />
-                ) : (
-                  <>
-                    Showing {filtered.length === 0 ? 0 : pageStart + 1}–{Math.min(pageEnd, filtered.length)} of{' '}
-                    {filtered.length} demi-fine piece{filtered.length !== 1 ? 's' : ''}
-                    {searchText.trim() ? ` for "${searchText.trim()}"` : ''} · 18K PVD Gold &amp; Waterproof
-                  </>
-                )}
-              </p>
-            </div>
-            <ProductFilters key={filtersResetKey} onApply={handleApplyFilters} categories={categories} value={filters} />
+        {/* Search & Quick Category Links */}
+        <div className="mb-4 space-y-3">
+          <div className="flex items-center gap-2.5 border border-[#E5E5E5] bg-[#FAFAFA] px-3.5 py-2.5 focus-within:border-[#121212] transition-colors">
+            <Search className="h-4 w-4 shrink-0 text-[#555555]" strokeWidth={1.5} />
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => {
+                const nextSearch = e.target.value;
+                setSearchText(nextSearch);
+                setCurrentPage(1);
+                updateParams({ search: nextSearch.trim() || null, page: null });
+              }}
+              placeholder="Search necklaces, bracelets, earrings..."
+              className="w-full bg-transparent text-xs sm:text-sm font-sans outline-none placeholder:text-[#737373] text-[#121212]"
+            />
+            {searchText || filters.categoryId || filters.subcategoryId || filters.maxPrice || (filters.priceRange && filters.priceRange !== 'all') ? (
+              <button
+                type="button"
+                onClick={handleClearAll}
+                className="p-1 text-[#555555] hover:text-[#121212] transition-colors"
+                aria-label="Clear search and filters"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            ) : null}
           </div>
 
-          {/* Search bar */}
-          <div className="rounded-2xl border border-[#B7A596]/40 bg-white p-3.5 md:p-4 shadow-xs">
-            <div className="flex items-center gap-3">
-              <Search className="h-4 w-4 shrink-0 text-[#8B7768]" />
-              <input
-                type="text"
-                value={searchText}
-                onChange={(e) => {
-                  const nextSearch = e.target.value;
-                  setSearchText(nextSearch);
-                  setCurrentPage(1);
-                  updateParams({ search: nextSearch.trim() || null, page: null });
-                }}
-                placeholder="Search necklaces, earrings, bracelets, rings, 18K gold, waterproof..."
-                className="w-full bg-transparent text-xs sm:text-sm font-sans outline-none placeholder:text-[#8B7E76] text-[#382F2A]"
-              />
-              {searchText || filters.categoryId || filters.subcategoryId || (filters.priceRange && filters.priceRange !== 'all') ? (
-                <button
-                  type="button"
-                  onClick={handleClearAll}
-                  className="rounded-full border border-[#B7A596]/40 p-1.5 text-[#63574F] transition-colors hover:border-[#8B7768] hover:text-[#8B7768]"
-                  aria-label="Clear search and filters"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              ) : null}
-            </div>
-          </div>
-
-          {/* Category Filter Strip */}
           {categories.length > 0 && (
-            <div className="space-y-2.5" role="region" aria-label="Category filter">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleCategorySelect('')}
-                  aria-pressed={!filters.categoryId}
-                  className={`rounded-full px-4 py-2 text-xs font-sans font-medium transition-all ${
-                    !filters.categoryId
-                      ? 'bg-[#6D5C50] text-[#F7F3ED] shadow-xs border border-[#6D5C50]'
-                      : 'bg-white text-[#382F2A] border border-[#D8CBBE] hover:border-[#8B7768] hover:bg-[#EFE7DE]/60'
-                  }`}
-                >
-                  All Jewellery
-                </button>
-                {categories.map((cat) => {
-                  const isActive = filters.categoryId === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => handleCategorySelect(cat.id)}
-                      aria-pressed={isActive}
-                      className={`rounded-full px-4 py-2 text-xs font-sans font-medium transition-all ${
-                        isActive
-                          ? 'bg-[#6D5C50] text-[#F7F3ED] shadow-xs border border-[#6D5C50]'
-                          : 'bg-white text-[#382F2A] border border-[#D8CBBE] hover:border-[#8B7768] hover:bg-[#EFE7DE]/60'
-                      }`}
-                    >
-                      {cat.name}
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Subcategory Pills when active category has children */}
-              {activeCategoryObj?.subcategories && activeCategoryObj.subcategories.length > 0 ? (
-                <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-[11px] font-sans uppercase tracking-[0.16em] text-[#8B7E76] mr-1">
-                    Refine:
-                  </span>
+            <div className="flex flex-wrap items-center gap-2" role="region" aria-label="Category filter">
+              <button
+                type="button"
+                onClick={() => handleCategorySelect('')}
+                aria-pressed={!filters.categoryId && !filters.maxPrice}
+                className={`px-3.5 py-1.5 text-xs font-sans transition-colors border ${
+                  !filters.categoryId && !filters.maxPrice
+                    ? 'bg-[#121212] text-white border-[#121212]'
+                    : 'bg-white text-[#121212] border-[#E5E5E5] hover:border-[#121212]'
+                }`}
+              >
+                All
+              </button>
+              {categories.map((cat) => {
+                const isActive = filters.categoryId === cat.id;
+                return (
                   <button
+                    key={cat.id}
                     type="button"
-                    onClick={() => handleSubcategorySelect('')}
-                    aria-pressed={!filters.subcategoryId}
-                    className={`rounded-full px-3.5 py-1.5 text-xs font-sans font-medium transition-all ${
-                      !filters.subcategoryId
-                        ? 'bg-[#EFE7DE] text-[#382F2A] border border-[#8B7768]'
-                        : 'bg-white/80 text-[#63574F] border border-[#D8CBBE] hover:border-[#8B7768]'
+                    onClick={() => handleCategorySelect(cat.id)}
+                    aria-pressed={isActive}
+                    className={`px-3.5 py-1.5 text-xs font-sans transition-colors border ${
+                      isActive
+                        ? 'bg-[#121212] text-white border-[#121212]'
+                        : 'bg-white text-[#121212] border-[#E5E5E5] hover:border-[#121212]'
                     }`}
                   >
-                    All {activeCategoryObj.name}
+                    {cat.name}
                   </button>
-                  {activeCategoryObj.subcategories.map((sub) => {
-                    const isSubActive = filters.subcategoryId === sub.id;
-                    return (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        onClick={() => handleSubcategorySelect(sub.id)}
-                        aria-pressed={isSubActive}
-                        className={`rounded-full px-3.5 py-1.5 text-xs font-sans font-medium transition-all ${
-                          isSubActive
-                            ? 'bg-[#EFE7DE] text-[#382F2A] border border-[#8B7768]'
-                            : 'bg-white/80 text-[#63574F] border border-[#D8CBBE] hover:border-[#8B7768]'
-                        }`}
-                      >
-                        {sub.name}
-                      </button>
-                    );
-                  })}
-                </div>
+                );
+              })}
+              {filters.maxPrice ? (
+                <button
+                  type="button"
+                  onClick={() => handleApplyFilters({ ...filters, maxPrice: null })}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-sans bg-[#121212] text-white border border-[#121212]"
+                >
+                  <span>Under Rs. {filters.maxPrice.toLocaleString('en-IN')}</span>
+                  <X className="w-3 h-3" />
+                </button>
               ) : null}
             </div>
           )}
+
+          {activeCategoryObj?.subcategories && activeCategoryObj.subcategories.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              <button
+                type="button"
+                onClick={() => handleSubcategorySelect('')}
+                className={`px-3 py-1 text-xs font-sans border transition-colors ${
+                  !filters.subcategoryId
+                    ? 'bg-[#F3F3F3] text-[#121212] border-[#121212]'
+                    : 'bg-white text-[#555555] border-[#E5E5E5] hover:border-[#121212]'
+                }`}
+              >
+                All {activeCategoryObj.name}
+              </button>
+              {activeCategoryObj.subcategories.map((sub) => {
+                const isSubActive = filters.subcategoryId === sub.id;
+                return (
+                  <button
+                    key={sub.id}
+                    type="button"
+                    onClick={() => handleSubcategorySelect(sub.id)}
+                    className={`px-3 py-1 text-xs font-sans border transition-colors ${
+                      isSubActive
+                        ? 'bg-[#F3F3F3] text-[#121212] border-[#121212]'
+                        : 'bg-white text-[#555555] border-[#E5E5E5] hover:border-[#121212]'
+                    }`}
+                  >
+                    {sub.name}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
 
-        {/* Products grid */}
-        {loading ? (
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
-            {Array(PRODUCTS_PER_PAGE).fill(0).map((_, i) => (
-              <div key={i} className="aspect-[4/5] animate-pulse rounded-2xl bg-white/70 border border-[#E5DACF]" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="border border-[#B7A596]/40 bg-white rounded-2xl py-24 text-center text-[#63574F] shadow-sm">
-            <p className="mb-2 text-xl font-heading text-[#382F2A]">No jewellery found</p>
-            <p className="mb-6 text-xs text-[#8B7E76]">Try adjusting your search or filters to explore more of our collection.</p>
+        {/* Dawn-Style Filter & Sort + Count Bar */}
+        <div className="mb-5 sm:mb-7">
+          <ProductFilters
+            key={filtersResetKey}
+            onApply={handleApplyFilters}
+            categories={categories}
+            value={filters}
+            productCount={filtered.length}
+          />
+        </div>
+
+        {/* Clean 2-col Mobile / 4-col Desktop Product Grid */}
+        {filtered.length === 0 ? (
+          <div className="border border-[#EBEBEB] bg-white py-20 text-center text-[#555555]">
+            <p className="mb-2 text-lg font-sans text-[#121212]">No jewellery found</p>
+            <p className="mb-6 text-xs text-[#737373]">
+              Try adjusting your search or filters to see more pieces.
+            </p>
             <button
+              type="button"
               onClick={handleClearAll}
-              className="rounded-full bg-[#6D5C50] text-[#F7F3ED] px-6 py-2.5 text-xs font-sans font-medium tracking-wide transition-colors hover:bg-[#58483D]"
+              className="bg-[#121212] text-white px-6 py-2.5 text-xs font-sans font-medium tracking-wide hover:bg-[#2C2C2C] transition-colors"
             >
-              Clear Search &amp; Filters
+              Clear filters
             </button>
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-2 gap-3.5 sm:gap-6 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-2.5 gap-y-6 sm:gap-x-5 sm:gap-y-9">
               {paginated.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -521,5 +478,3 @@ export function ProductsClient({
     </main>
   );
 }
-
-

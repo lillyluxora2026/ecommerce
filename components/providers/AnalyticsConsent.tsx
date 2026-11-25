@@ -179,19 +179,19 @@ export function AnalyticsConsent() {
       ) : null}
 
       {consent === 'pending' || preferencesOpen ? (
-        <div className="fixed inset-x-4 bottom-4 z-[90] mx-auto max-w-3xl rounded-3xl border border-[#D8CBBE] bg-[#F7F3ED]/95 p-5 text-sm font-sans text-[#63574F] shadow-2xl backdrop-blur md:bottom-6 md:px-6">
+        <div className="fixed inset-x-4 bottom-4 z-[90] mx-auto max-w-3xl border border-[#EBEBEB] bg-white p-5 text-sm font-sans text-[#555555] shadow-2xl md:bottom-6 md:px-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="max-w-2xl space-y-1.5">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8B7768]">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[#555555]">
                 Analytics Preferences
               </p>
-              <p className="text-base font-heading text-[#382F2A]">
+              <p className="text-base font-sans text-[#121212]">
                 We use Google Analytics only if you allow it.
               </p>
               <p className="text-xs sm:text-sm">
                 Accepting enables privacy-aware traffic measurement for the storefront. Declining keeps analytics disabled.
                 Read the details in our{' '}
-                <Link href="/privacy-policy" className="text-[#8B7768] font-medium underline underline-offset-4">
+                <Link href="/privacy-policy" className="text-[#121212] font-medium underline underline-offset-4">
                   privacy policy
                 </Link>
                 .
@@ -202,14 +202,14 @@ export function AnalyticsConsent() {
               <button
                 type="button"
                 onClick={() => setConsentChoice('denied')}
-                className="rounded-full border border-[#B7A596] bg-white px-5 py-2 text-xs font-medium text-[#382F2A] transition-colors hover:bg-[#EFE7DE]"
+                className="border border-[#D4D4D4] bg-white px-5 py-2 text-xs font-medium text-[#121212] transition-colors hover:border-[#121212]"
               >
                 Decline
               </button>
               <button
                 type="button"
                 onClick={() => setConsentChoice('granted')}
-                className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] px-5 py-2 text-xs font-medium text-[#F7F3ED] transition-colors"
+                className="bg-[#121212] hover:bg-[#2C2C2C] px-5 py-2 text-xs font-medium text-white transition-colors"
               >
                 Accept Analytics
               </button>

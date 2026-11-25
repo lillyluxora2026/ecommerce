@@ -91,13 +91,13 @@ type RazorpayConstructor = new (options: RazorpayCheckoutOptions) => RazorpayIns
 
 function OrdersPageFallback() {
   return (
-    <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 md:px-12 py-10 md:py-16">
-        <h1 className="text-3xl md:text-4xl font-heading font-normal tracking-tight mb-8 border-b border-[#B7A596]/40 pb-6">
+    <main className="w-full bg-white text-[#121212] min-h-screen">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 py-8 sm:py-12">
+        <h1 className="text-2xl sm:text-3xl font-sans font-normal tracking-tight mb-7 border-b border-[#EBEBEB] pb-5">
           Order History
         </h1>
         <div className="py-24 text-center">
-          <p className="text-sm font-sans text-[#63574F] animate-pulse">Loading orders...</p>
+          <p className="text-sm font-sans text-[#555555] animate-pulse">Loading orders...</p>
         </div>
       </div>
     </main>
@@ -157,21 +157,21 @@ function OrdersPageContent() {
 
   if (!user) {
     return (
-      <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
-        <span className="text-[#8B7768] uppercase tracking-[0.24em] text-xs font-sans font-medium mb-3 block">
+      <main className="w-full bg-white text-[#121212] min-h-[70vh] flex flex-col items-center justify-center py-24 px-4 text-center">
+        <span className="text-[#555555] uppercase tracking-[0.16em] text-xs font-sans font-medium mb-2.5 block">
           Lily Luxora Account
         </span>
-        <h1 className="text-3xl md:text-5xl font-heading font-normal tracking-tight text-[#382F2A] mb-4">
+        <h1 className="text-2xl sm:text-4xl font-sans font-normal tracking-tight text-[#121212] mb-3">
           Order History
         </h1>
-        <p className="text-xs sm:text-sm font-sans text-[#63574F] max-w-sm mb-8 leading-relaxed">
-          Please log in to view your orders and track delivery updates.
+        <p className="text-xs sm:text-sm font-sans text-[#555555] max-w-sm mb-7 leading-relaxed">
+          Sign in to view your orders and track delivery updates.
         </p>
         <button
           onClick={() => setAuthModalOpen(true)}
-          className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-8 py-3.5 text-xs font-sans font-medium tracking-[0.16em] uppercase transition-all shadow-sm"
+          className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-8 py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors"
         >
-          Sign In
+          Sign in
         </button>
       </main>
     );
@@ -299,7 +299,7 @@ function OrdersPageContent() {
           },
         },
         theme: {
-          color: '#8B7768',
+          color: '#121212',
         },
       };
 
@@ -322,13 +322,13 @@ function OrdersPageContent() {
   };
 
   return (
-    <main className="w-full bg-[#F7F3ED] text-[#382F2A] min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 md:px-12 py-10 md:py-16">
-        <div className="border-b border-[#B7A596]/40 pb-6 mb-8">
-          <span className="text-[#8B7768] uppercase tracking-[0.22em] text-xs font-sans font-medium block mb-1">
+    <main className="w-full bg-white text-[#121212] min-h-screen">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-10 py-8 sm:py-12">
+        <div className="border-b border-[#EBEBEB] pb-5 mb-7">
+          <span className="text-[#555555] uppercase tracking-[0.16em] text-xs font-sans font-medium block mb-1">
             Purchases &amp; Tracking
           </span>
-          <h1 className="text-3xl md:text-4xl font-heading font-normal tracking-tight text-[#382F2A]">
+          <h1 className="text-2xl sm:text-3xl font-sans font-normal tracking-tight text-[#121212]">
             Order History
           </h1>
         </div>
@@ -351,64 +351,66 @@ function OrdersPageContent() {
 
         {loading ? (
           <div className="py-24 text-center">
-            <p className="text-sm font-sans text-[#63574F] animate-pulse">Loading orders...</p>
+            <p className="text-sm font-sans text-[#555555] animate-pulse">Loading orders...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="rounded-2xl border border-[#B7A596]/40 bg-white py-24 px-4 text-center shadow-xs max-w-xl mx-auto">
-            <h2 className="text-xl font-heading font-normal text-[#382F2A] mb-2">No Past Orders Found</h2>
-            <p className="text-xs sm:text-sm font-sans text-[#63574F] max-w-md mx-auto mb-6 leading-relaxed">
+          <div className="border border-[#EBEBEB] bg-white py-20 px-4 text-center max-w-xl mx-auto">
+            <h2 className="text-xl font-sans font-normal text-[#121212] mb-2">No Past Orders Found</h2>
+            <p className="text-xs sm:text-sm font-sans text-[#555555] max-w-md mx-auto mb-6 leading-relaxed">
               You haven&apos;t placed any orders yet. Explore our waterproof demi-fine jewellery collection.
             </p>
             <Link
               href="/products"
-              className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-8 py-3 text-xs font-sans font-medium tracking-wide uppercase inline-block shadow-sm"
+              className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-8 py-3 text-xs sm:text-[13px] font-sans font-medium tracking-wide inline-block transition-colors"
             >
-              Start Shopping
+              Start shopping
             </Link>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {orders.map((order) => (
               <div
                 key={order.id}
-                className={`rounded-2xl border p-6 bg-white shadow-xs ${
-                  highlightedOrderId === order.id ? 'border-[#8B7768] ring-1 ring-[#8B7768]/30' : 'border-[#E5DACF]'
+                className={`border p-6 bg-white ${
+                  highlightedOrderId === order.id ? 'border-[#121212] ring-1 ring-[#121212]/20' : 'border-[#EBEBEB]'
                 }`}
               >
-                <div className="flex flex-wrap justify-between gap-4 mb-5 pb-5 border-b border-[#B7A596]/30">
+                <div className="flex flex-wrap justify-between gap-4 mb-5 pb-5 border-b border-[#EBEBEB]">
                   <div>
-                    <h3 className="font-heading text-lg font-normal text-[#382F2A]">Order #{order.order_number || order.id.slice(0, 8)}</h3>
-                    <p className="text-[#63574F] font-sans text-xs mt-0.5">{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                    <h3 className="font-sans text-base font-medium text-[#121212]">Order #{order.order_number || order.id.slice(0, 8)}</h3>
+                    <p className="text-[#555555] font-sans text-xs mt-0.5">{new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-sans font-bold text-base text-[#382F2A]">₹{order.grand_total?.toFixed(0) || '0'}</p>
-                    <span className="inline-block mt-1 text-[10px] font-sans font-semibold uppercase tracking-wider text-[#6D5C50] bg-[#EFE7DE] px-2.5 py-0.5 rounded-full">
+                    <p className="font-sans font-medium text-base text-[#121212] tabular-nums">
+                      Rs. {order.grand_total?.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+                    </p>
+                    <span className="inline-block mt-1 text-[10px] font-sans font-medium uppercase tracking-wider text-[#121212] bg-[#F4F4F4] px-2.5 py-0.5 rounded-full">
                       {order.financial_status || 'Pending'} • {order.fulfillment_status || 'Processing'}
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   {order.order_items?.map((item: OrderItem, idx: number) => (
                     <div key={idx} className="flex justify-between items-center gap-4 text-xs sm:text-sm font-sans">
-                      <span className="text-[#63574F]">
+                      <span className="text-[#555555]">
                         {item.quantity}x {item.title}
                         {item.variant_title && item.variant_title !== 'Default Variant' ? ` • ${item.variant_title}` : ''}
                       </span>
-                      <span className="font-semibold text-[#382F2A]">₹{item.unit_price?.toFixed(0)}</span>
+                      <span className="font-medium text-[#121212] tabular-nums">Rs. {item.unit_price?.toLocaleString('en-IN')}</span>
                     </div>
                   ))}
                 </div>
 
                 {(order.financial_status === 'pending' || order.financial_status === 'failed') && (
-                  <div className="mt-5 pt-5 border-t border-[#B7A596]/30 flex justify-end">
+                  <div className="mt-5 pt-5 border-t border-[#EBEBEB] flex justify-end">
                     <button
                       type="button"
                       onClick={() => handleRetryPayment(order.id)}
                       disabled={retryingOrderId === order.id}
-                      className="rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] px-6 py-2.5 text-xs font-sans font-semibold uppercase tracking-widest transition-all shadow-sm disabled:opacity-50"
+                      className="bg-[#121212] hover:bg-[#2C2C2C] text-white px-6 py-2.5 text-xs font-sans font-medium tracking-wide transition-colors disabled:opacity-50"
                     >
-                      {retryingOrderId === order.id ? 'Opening...' : 'Complete Payment'}
+                      {retryingOrderId === order.id ? 'Opening...' : 'Complete payment'}
                     </button>
                   </div>
                 )}

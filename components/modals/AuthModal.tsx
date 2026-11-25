@@ -139,23 +139,23 @@ export function AuthModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#382F2A]/50 backdrop-blur-sm animate-in fade-in px-4">
-      <div className="w-full max-w-md rounded-3xl bg-[#F7F3ED] border border-[#D8CBBE] flex flex-col animate-in zoom-in-95 duration-200 relative shadow-2xl p-8 md:p-10">
-        
-        <button 
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 backdrop-blur-[2px] animate-in fade-in px-4">
+      <div className="w-full max-w-md bg-white border border-[#EBEBEB] flex flex-col animate-in zoom-in-95 duration-200 relative shadow-2xl p-8 md:p-10">
+
+        <button
           type="button"
           aria-label="Close sign in dialog"
-          onClick={handleClose} 
-          className="absolute top-5 right-5 p-2 text-[#63574F] hover:text-[#382F2A] hover:bg-[#EFE7DE] transition-colors rounded-full"
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-2 text-[#121212] hover:bg-[#F5F5F5] transition-colors"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5" strokeWidth={1.5} />
         </button>
 
-        <span className="text-[11px] font-sans font-semibold uppercase tracking-[0.22em] text-[#8B7768] mb-1.5">
+        <span className="text-[11px] font-sans font-medium uppercase tracking-[0.16em] text-[#555555] mb-1.5">
           Lily Luxora Account
         </span>
-        <h2 className="text-3xl font-heading font-normal italic mb-2 tracking-wide text-[#382F2A]">Welcome Back</h2>
-        <p className="text-xs sm:text-sm font-sans text-[#63574F] mb-7 leading-relaxed">
+        <h2 className="text-2xl font-sans font-normal mb-2 tracking-tight text-[#121212]">Welcome Back</h2>
+        <p className="text-xs sm:text-sm font-sans text-[#555555] mb-6 leading-relaxed">
           {step === 'email'
             ? 'Enter your email to sign in or create an account.'
             : step === 'otp'
@@ -164,58 +164,58 @@ export function AuthModal() {
         </p>
 
         {error && (
-          <div className="rounded-xl bg-[#FDF2F2] border border-[#F5C2C2] text-[#9B2C2C] px-4 py-3 mb-6 text-xs font-sans">
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 mb-5 text-xs font-sans">
             {error}
           </div>
         )}
 
         {step === 'email' ? (
-          <form onSubmit={handleSendOtp} className="space-y-5">
+          <form onSubmit={handleSendOtp} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] uppercase tracking-[0.18em] font-semibold text-[#63574F] font-sans">Email Address</label>
-              <input 
-                type="email" 
+              <label className="text-xs font-medium text-[#121212] font-sans">Email</label>
+              <input
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com" 
+                placeholder="name@example.com"
                 autoComplete="email"
                 required
-                className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-sm font-sans text-[#382F2A] placeholder:text-[#8B7E76]"
+                className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-sm font-sans text-[#121212] placeholder:text-[#737373]"
               />
             </div>
-            <button 
+            <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] py-3.5 text-xs font-sans font-semibold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+              className="w-full bg-[#121212] hover:bg-[#2C2C2C] text-white py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors disabled:opacity-50"
             >
-              {loading ? 'Sending...' : 'Send Login Code'}
+              {loading ? 'Sending...' : 'Send login code'}
             </button>
           </form>
         ) : step === 'otp' ? (
-          <form onSubmit={handleVerifyOtp} className="space-y-5">
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] uppercase tracking-[0.18em] font-semibold text-[#63574F] font-sans">Verification Code</label>
-              <input 
-                type="text" 
+              <label className="text-xs font-medium text-[#121212] font-sans">Verification code</label>
+              <input
+                type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="000000" 
+                placeholder="000000"
                 maxLength={6}
                 required
-                className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-2xl font-sans tracking-[0.35em] text-center text-[#382F2A] placeholder:text-[#8B7E76]"
+                className="w-full bg-white border border-[#D4D4D4] px-4 py-3 outline-none focus:border-[#121212] transition-colors text-2xl font-sans tracking-[0.35em] text-center text-[#121212] placeholder:text-[#737373]"
               />
             </div>
-            <button 
+            <button
               type="submit"
               disabled={loading || otp.length < 6}
-              className="w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] py-3.5 text-xs font-sans font-semibold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100"
+              className="w-full bg-[#121212] hover:bg-[#2C2C2C] text-white py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors disabled:opacity-50"
             >
-              {loading ? 'Verifying...' : 'Sign In'}
+              {loading ? 'Verifying...' : 'Sign in'}
             </button>
-            <button 
+            <button
               type="button"
               onClick={() => setStep('email')}
-              className="w-full text-[#63574F] hover:text-[#382F2A] text-xs font-sans transition-colors py-1"
+              className="w-full text-[#555555] hover:text-[#121212] text-xs font-sans transition-colors py-1"
             >
               Back to email entry
             </button>
@@ -223,16 +223,16 @@ export function AuthModal() {
         ) : (
           <form onSubmit={handleCompleteProfile} className="space-y-4">
             <div className="space-y-1.5">
-              <label className="text-[11px] uppercase tracking-[0.18em] font-semibold text-[#63574F] font-sans">Verified Email</label>
+              <label className="text-xs font-medium text-[#121212] font-sans">Verified Email</label>
               <input
                 type="email"
                 value={email}
                 disabled
-                className="w-full bg-[#EFE7DE]/60 border border-[#D8CBBE] rounded-xl px-4 py-2.5 text-sm font-sans text-[#63574F]"
+                className="w-full bg-[#F8F8F8] border border-[#EBEBEB] px-3.5 py-2.5 text-sm font-sans text-[#555555]"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] uppercase tracking-[0.18em] font-semibold text-[#63574F] font-sans">Full Name</label>
+              <label className="text-xs font-medium text-[#121212] font-sans">Full Name</label>
               <input
                 type="text"
                 value={fullName}
@@ -240,11 +240,11 @@ export function AuthModal() {
                 placeholder="Your full name"
                 autoComplete="name"
                 required
-                className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-sm font-sans text-[#382F2A] placeholder:text-[#8B7E76]"
+                className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-sm font-sans text-[#121212] placeholder:text-[#737373]"
               />
             </div>
             <div className="space-y-1.5">
-              <label className="text-[11px] uppercase tracking-[0.18em] font-semibold text-[#63574F] font-sans">Phone Number</label>
+              <label className="text-xs font-medium text-[#121212] font-sans">Phone Number</label>
               <input
                 type="tel"
                 value={phone}
@@ -252,13 +252,13 @@ export function AuthModal() {
                 placeholder="+91 98765 43210"
                 autoComplete="tel"
                 required
-                className="w-full bg-white border border-[#D8CBBE] rounded-xl px-4 py-3 outline-none focus:border-[#8B7768] transition-colors text-sm font-sans text-[#382F2A] placeholder:text-[#8B7E76]"
+                className="w-full bg-white border border-[#D4D4D4] px-3.5 py-3 outline-none focus:border-[#121212] transition-colors text-sm font-sans text-[#121212] placeholder:text-[#737373]"
               />
             </div>
             <button
               type="submit"
               disabled={loading || !fullName.trim() || !phone.trim()}
-              className="w-full rounded-full bg-[#6D5C50] hover:bg-[#58483D] text-[#F7F3ED] py-3.5 text-xs font-sans font-semibold tracking-[0.16em] uppercase transition-all duration-300 shadow-sm active:scale-[0.98] disabled:opacity-50"
+              className="w-full bg-[#121212] hover:bg-[#2C2C2C] text-white py-3.5 text-xs sm:text-[13px] font-sans font-medium tracking-wide transition-colors disabled:opacity-50"
             >
               {loading ? 'Saving...' : 'Continue'}
             </button>
